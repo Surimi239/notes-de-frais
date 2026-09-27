@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#236443">
+<title>Notes de frais</title>
+
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;background:#f5f7f6;color:#101713;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif
+}
+main{max-width:700px;margin:auto;padding:30px 18px 110px}
+h1{font-size:36px;margin:0 0 25px}
+.month{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.month button{border:0;border-radius:50%;width:48px;height:48px;font-size:28px;color:#236443}
+.month strong{font-size:23px}
+.total{
+  background:#236443;color:white;padding:25px;border-radius:28px;
+  margin-bottom:18px
+}
+.total small{font-size:19px;opacity:.8}
+.total b{display:block;font-size:43px;margin-top:8px}
+.search{
+  width:100%;border:1px solid #ddd;border-radius:17px;
+  padding:15px;font-size:18px;margin-bottom:18px
+}
+.item{
+  background:white;padding:14px;border-radius:18px;
+  margin-bottom:11px;display:flex;justify-content:space-between;gap:10px
+}
+.item span{color:#6c746f;font-size:14px}
+.item b:last-child{white-space:nowrap}
+.empty{text-align:center;color:#777;padding:65px 10px}
+.bottom{
+  position:fixed;bottom:0;left:0;right:0;
+  padding:15px 18px calc(env(safe-area-inset-bottom) + 10px);
+  background:#f5f7f6
+}
+.scan{
+  display:block;max-width:700px;margin:auto;width:100%;
+  height:62px;border:0;border-radius:32px;
+  background:#236443;color:white;font-weight:bold;font-size:20px
+}
+.sheet{
+  display:none;position:fixed;inset:0;background:#0008;
+  align-items:flex-end;z-index:10
+}
+.sheet.open{display:flex}
+.panel{
+  background:white;width:100%;max-width:700px;margin:auto;
+  padding:20px 18px calc(env(safe-area-inset-bottom) + 18px);
+  border-radius:28px 28px 0 0;max-height:93vh;overflow:auto
+}
+img{width:100%;max-height:250px;object-fit:contain;border-radius:15px}
+label{display:block;margin:14px 0 6px;font-weight:bold}
+input.field{
+  width:100%;height:50px;border:1px solid #ddd;
+  border-radius:13px;padding:10px;font-size:17px
+}
+.status{
+  margin:12px 0;background:#eaf2ee;color:#236443;
+  padding:12px;border-radius:12px
+}
+.buttons{display:flex;gap:10px;margin-top:20px}
+.buttons button{flex:1;height:52px;border:0;border-radius:14px;font-weight:bold}
+.cancel{background:#eee}
+.save{background:#236443;color:white}
+.top{display:flex;justify-content:space-between;align-items:center}
+.export{border:0;background:white;border-radius:20px;padding:10px 13px}
+</style>
+</head>
+
+<body>
+
+<main>
+<div class="top">
+<h1>Mes dépenses</h1>
+<button class="export" onclick="exportCSV()">Exporter CSV</button>
+</div>
+
+<div class="month">
+<button onclick="moveMonth(-1)">‹</button>
+<strong id="month"></strong>
+<button onclick="moveMonth(1)">›</button>
+</div>
+
+<div class="total">
+<small>Total du mois</small>
+<b id="total">0,00 €</b>
+<div id="count">0 dépense</div>
+</div>
+
+<input class="search" id="search"
+ placeholder="🔍 Rechercher une dépense"
+ oninput="render()">
+
+<div id="list"></div>
+</main>
+
+<div class="bottom">
+<button class="scan" onclick="document.getElementById('camera').click()">
+📷 Scanner un justificatif
+</button>
+</div>
+
+<input hidden id="camera" type="file" accept="image/*" capture="environment">
+
+<div class="sheet" id="sheet">
+<div class="panel">
+<h2>Vérifier la dépense</h2>
+
+<img id="preview">
+
+<div class="status" id="status">Analyse du ticket…</div>
+
+<label>Date</label>
+<input class="field" type="date" id="date">
+
+<label>Description / commerçant</label>
+<input class="field" id="merchant">
+
+<label>Montant (€)</label>
+<input class="field" type="number" step="0.01" id="amount">
+
+<div class="buttons">
+<button class="cancel" onclick="closeSheet()">Annuler</button>
+<button class="save" onclick="saveExpense()">Enregistrer</button>
+</div>
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
+<script>
+let currentMonth=new Date()
+let photo=""
+let ocr=""
+let expenses=JSON.parse(localStorage.getItem("expenses")||"[]")
+
+const $=x=>document.getElementById(x)
+
+function euro(n){
+ return new Intl.NumberFormat("fr-FR",
+ {style:"currency",currency:"EUR"}).format(n||0)
+}
+
+function sameMonth(s,d){
+ const x=new Date(s+"T12:00:00")
+ return x.getMonth()==d.getMonth() && x.getFullYear()==d.getFullYear()
+}
+
+function render(){
+ const q=$("search").value.toLowerCase()
+ const rows=expenses
+  .filter(x=>sameMonth(x.date,currentMonth))
+  .filter(x=>!q||x.merchant.toLowerCase().includes(q)||String(x.amount).includes(q))
+  .sort((a,b)=>b.date.localeCompare(a.date))
+
+ $("month").textContent=
+  new Intl.DateTimeFormat("fr-FR",{month:"long",year:"numeric"})
+  .format(currentMonth)
+
+ const total=rows.reduce((s,x)=>s+Number(x.amount),0)
+ $("total").textContent=euro(total)
+ $("count").textContent=rows.length+" dépense"+(rows.length>1?"s":"")
+
+ if(!rows.length){
+  $("list").innerHTML=
+   '<div class="empty">👛<h2>Aucune dépense</h2>Scanne un justificatif pour commencer.</div>'
+  return
+ }
+
+ $("list").innerHTML=rows.map(x=>`
+ <div class="item">
+   <div>
+     <b>${escapeHTML(x.merchant)}</b><br>
+     <span>${formatDate(x.date)}</span>
+   </div>
+   <b>${euro(x.amount)}</b>
+ </div>`).join("")
+}
+
+function escapeHTML(s){
+ return String(s).replace(/[&<>"']/g,c=>({
+  "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+ })[c])
+}
+
+function formatDate(s){
+ const [y,m,d]=s.split("-")
+ return d+"/"+m+"/"+y
+}
+
+function moveMonth(n){
+ currentMonth=new Date(currentMonth.getFullYear(),currentMonth.getMonth()+n,1)
+ render()
+}
+
+$("camera").onchange=async e=>{
+ const file=e.target.files[0]
+ if(!file)return
+
+ $("date").value=new Date().toISOString().slice(0,10)
+ $("merchant").value=""
+ $("amount").value=""
+ $("status").textContent="Analyse du ticket…"
+
+ const r=new FileReader()
+
+ r.onload=async()=>{
+  photo=r.result
+  $("preview").src=photo
+  $("sheet").classList.add("open")
+
+  try{
+   const result=await Tesseract.recognize(photo,"fra+eng",{
+    logger:m=>{
+     if(m.status==="recognizing text"){
+      $("status").textContent=
+       "Lecture du ticket… "+Math.round((m.progress||0)*100)+" %"
+     }
+    }
+   })
+
+   ocr=result.data.text||""
+
+   const date=findDate(ocr)
+   const amount=findAmount(ocr)
+   const merchant=findMerchant(ocr)
+
+   if(date)$("date").value=date
+   if(amount!==null)$("amount").value=amount.toFixed(2)
+   $("merchant").value=merchant
+
+   $("status").textContent="Ticket analysé — vérifie puis enregistre."
+
+  }catch(err){
+   $("status").textContent=
+    "Lecture automatique impossible. Tu peux remplir les champs manuellement."
+  }
+ }
+
+ r.readAsDataURL(file)
+ e.target.value=""
+}
+
+function lines(text){
+ return text.split(/\r?\n/).map(x=>x.trim()).filter(Boolean)
+}
+
+function findDate(text){
+ let m=text.match(/\b([0-3]?\d)[\/.\-]([01]?\d)[\/.\-](\d{4})\b/)
+ if(!m)m=text.match(/\b([0-3]?\d)[\/.\-]([01]?\d)[\/.\-](\d{2})\b/)
+ if(!m)return ""
+
+ let y=Number(m[3])
+ if(y<100)y+=2000
+
+ return y+"-"+String(Number(m[2])).padStart(2,"0")+"-"+
+ String(Number(m[1])).padStart(2,"0")
+}
+
+function getAmount(line){
+ const a=[...line.matchAll(/(\d{1,6}[,.]\d{2})/g)]
+ if(!a.length)return null
+ return Number(a[a.length-1][1].replace(",","."))
+}
+
+function findAmount(text){
+ const l=lines(text)
+ const keys=["TOTAL TTC","NET A PAYER","NET À PAYER","A PAYER","À PAYER","TOTAL","MONTANT"]
+
+ for(const k of keys){
+  for(const x of l.filter(v=>v.toUpperCase().includes(k)).reverse()){
+   const n=getAmount(x)
+   if(n!==null)return n
+  }
+ }
+
+ const values=l.map(getAmount).filter(x=>x!==null && x>0)
+ return values.length?Math.max(...values):null
+}
+
+function findMerchant(text){
+ const ignore=/ticket|facture|total|tva|merci|carte|visa|date|siret|www|http/i
+
+ for(const x of lines(text).slice(0,12)){
+  if(x.length<3||x.length>60||ignore.test(x))continue
+  if((x.match(/[A-Za-zÀ-ÿ]/g)||[]).length<3)continue
+  return x
+ }
+
+ return "Dépense"
+}
+
+function closeSheet(){
+ $("sheet").classList.remove("open")
+}
+
+function saveExpense(){
+ const date=$("date").value
+ const merchant=$("merchant").value.trim()
+ const amount=Number($("amount").value)
+
+ if(!date||!merchant||!amount){
+  alert("Vérifie la date, la description et le montant.")
+  return
+ }
+
+ expenses.push({
+  id:Date.now(),
+  date,
+  merchant,
+  amount,
+  ocr
+ })
+
+ localStorage.setItem("expenses",JSON.stringify(expenses))
+ closeSheet()
+ render()
+}
+
+function exportCSV(){
+ if(!expenses.length){
+  alert("Aucune dépense à exporter.")
+  return
+ }
+
+ let csv="\uFEFFDate;Description;Montant\n"
+
+ expenses.forEach(x=>{
+  csv+=formatDate(x.date)+";"+
+       x.merchant.replaceAll(";"," " )+";"+
+       Number(x.amount).toFixed(2).replace(".",",")+"\n"
+ })
+
+ const blob=new Blob([csv],{type:"text/csv;charset=utf-8"})
+ const url=URL.createObjectURL(blob)
+ const a=document.createElement("a")
+
+ a.href=url
+ a.download="notes-de-frais.csv"
+ a.click()
+
+ setTimeout(()=>URL.revokeObjectURL(url),1000)
+}
+
+render()
+</script>
+
+</body>
+</html>
