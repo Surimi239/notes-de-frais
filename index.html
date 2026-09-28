@@ -23,9 +23,41 @@ main{
   padding:30px 18px 110px
 }
 
+.top{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px
+}
+
+.topRight{
+  display:flex;
+  gap:8px;
+  align-items:center
+}
+
 h1{
   font-size:36px;
   margin:0 0 25px
+}
+
+.addBtn{
+  width:44px;
+  height:44px;
+  border:0;
+  border-radius:50%;
+  background:#236443;
+  color:white;
+  font-size:30px;
+  line-height:1;
+  font-weight:400
+}
+
+.export{
+  border:0;
+  background:white;
+  border-radius:20px;
+  padding:10px 13px
 }
 
 .month{
@@ -217,19 +249,6 @@ input.field{
   color:#b42318;
   font-weight:bold
 }
-
-.top{
-  display:flex;
-  justify-content:space-between;
-  align-items:center
-}
-
-.export{
-  border:0;
-  background:white;
-  border-radius:20px;
-  padding:10px 13px
-}
 </style>
 </head>
 
@@ -239,7 +258,11 @@ input.field{
 
 <div class="top">
 <h1>Mes dépenses</h1>
+
+<div class="topRight">
+<button class="addBtn" onclick="openManualExpense()">+</button>
 <button class="export" onclick="exportCSV()">Exporter CSV</button>
+</div>
 </div>
 
 <div class="month">
@@ -330,10 +353,8 @@ Supprimer cette dépense
 <script>
 
 let currentMonth=new Date()
-
 let photo=""
 let ocr=""
-
 let editingId=null
 
 let expenses=
@@ -342,7 +363,6 @@ JSON.parse(localStorage.getItem("expenses")||"[]")
 const $=x=>document.getElementById(x)
 
 function euro(n){
-
  return new Intl.NumberFormat(
   "fr-FR",
   {
@@ -350,11 +370,9 @@ function euro(n){
    currency:"EUR"
   }
  ).format(n||0)
-
 }
 
 function sameMonth(s,d){
-
  const x=new Date(s+"T12:00:00")
 
  return(
@@ -362,7 +380,6 @@ function sameMonth(s,d){
   &&
   x.getFullYear()==d.getFullYear()
  )
-
 }
 
 function render(){
@@ -372,11 +389,7 @@ function render(){
 
  const rows=
  expenses
-
- .filter(
-  x=>sameMonth(x.date,currentMonth)
- )
-
+ .filter(x=>sameMonth(x.date,currentMonth))
  .filter(
   x=>
   !q
@@ -385,10 +398,7 @@ function render(){
   ||
   String(x.amount).includes(q)
  )
-
- .sort(
-  (a,b)=>b.date.localeCompare(a.date)
- )
+ .sort((a,b)=>b.date.localeCompare(a.date))
 
  $("month").textContent=
  new Intl.DateTimeFormat(
@@ -419,7 +429,7 @@ function render(){
   '<div class="empty">'+
   '👛'+
   '<h2>Aucune dépense</h2>'+
-  'Scanne un justificatif pour commencer.'+
+  'Scanne un justificatif ou ajoute une dépense manuellement.'+
   '</div>'
 
   return
@@ -434,31 +444,19 @@ function render(){
  >
 
    <div>
-
-     <b>
-     ${escapeHTML(x.merchant)}
-     </b>
-
+     <b>${escapeHTML(x.merchant)}</b>
      <br>
-
-     <span>
-     ${formatDate(x.date)}
-     </span>
-
+     <span>${formatDate(x.date)}</span>
    </div>
 
-   <b>
-   ${euro(x.amount)}
-   </b>
+   <b>${euro(x.amount)}</b>
 
  </div>
 
  `).join("")
-
 }
 
 function escapeHTML(s){
-
  return String(s).replace(
   /[&<>"']/g,
   c=>({
@@ -469,19 +467,14 @@ function escapeHTML(s){
    "'":"&#39;"
   })[c]
  )
-
 }
 
 function formatDate(s){
-
  const [y,m,d]=s.split("-")
-
  return d+"/"+m+"/"+y
-
 }
 
 function moveMonth(n){
-
  currentMonth=
  new Date(
   currentMonth.getFullYear(),
@@ -490,12 +483,42 @@ function moveMonth(n){
  )
 
  render()
+}
 
+function openManualExpense(){
+
+ editingId=null
+ photo=""
+ ocr=""
+
+ $("sheetTitle").textContent=
+ "Nouvelle dépense"
+
+ $("date").value=
+ new Date()
+ .toISOString()
+ .slice(0,10)
+
+ $("merchant").value=""
+ $("amount").value=""
+
+ $("preview").src=""
+ $("preview").style.display="none"
+
+ $("status").style.display="none"
+
+ $("deleteButton").style.display="none"
+
+ $("sheet")
+ .classList
+ .add("open")
 }
 
 function startScan(){
 
  editingId=null
+ photo=""
+ ocr=""
 
  $("sheetTitle").textContent=
  "Vérifier la dépense"
@@ -506,7 +529,6 @@ function startScan(){
  document
  .getElementById("camera")
  .click()
-
 }
 
 $("camera").onchange=
@@ -522,7 +544,6 @@ async e=>{
  .slice(0,10)
 
  $("merchant").value=""
-
  $("amount").value=""
 
  $("status").style.display="block"
@@ -540,6 +561,9 @@ async e=>{
 
   $("preview").src=
   photo
+
+  $("preview").style.display=
+  "block"
 
   $("sheet")
   .classList
@@ -566,11 +590,8 @@ async e=>{
         (m.progress||0)*100
        )+
        " %"
-
       }
-
      }
-
     }
    )
 
@@ -598,30 +619,24 @@ async e=>{
 
    $("status").textContent=
    "Ticket analysé — vérifie puis enregistre."
-
   }
   catch(err){
 
    $("status").textContent=
    "Lecture automatique impossible. Tu peux remplir les champs manuellement."
-
   }
-
  }
 
  r.readAsDataURL(file)
 
  e.target.value=""
-
 }
 
 function lines(text){
-
  return text
  .split(/\r?\n/)
  .map(x=>x.trim())
  .filter(Boolean)
-
 }
 
 function findDate(text){
@@ -656,7 +671,6 @@ function findDate(text){
   String(Number(m[1]))
   .padStart(2,"0")
  )
-
 }
 
 function getAmount(line){
@@ -673,7 +687,6 @@ function getAmount(line){
   a[a.length-1][1]
   .replace(",",".")
  )
-
 }
 
 function findAmount(text){
@@ -709,9 +722,7 @@ function findAmount(text){
 
    if(n!==null)
    return n
-
   }
-
  }
 
  const values=
@@ -731,7 +742,6 @@ function findAmount(text){
   :
   null
  )
-
 }
 
 function findMerchant(text){
@@ -761,11 +771,9 @@ function findMerchant(text){
   continue
 
   return x
-
  }
 
  return "Dépense"
-
 }
 
 function openExpense(id){
@@ -816,7 +824,6 @@ function openExpense(id){
  $("sheet")
  .classList
  .add("open")
-
 }
 
 function closeSheet(){
@@ -829,7 +836,6 @@ function closeSheet(){
 
  $("preview").style.display=
  "block"
-
 }
 
 function saveExpense(){
@@ -877,28 +883,18 @@ function saveExpense(){
     merchant,
     amount
    }
-
   }
-
  }
  else{
 
   expenses.push({
-
    id:Date.now(),
-
    date,
-
    merchant,
-
    amount,
-
    ocr,
-
    photo
-
   })
-
  }
 
  localStorage.setItem(
@@ -909,7 +905,6 @@ function saveExpense(){
  closeSheet()
 
  render()
-
 }
 
 function deleteExpense(){
@@ -949,7 +944,6 @@ function deleteExpense(){
  closeSheet()
 
  render()
-
 }
 
 function exportCSV(){
@@ -961,7 +955,6 @@ function exportCSV(){
   )
 
   return
-
  }
 
  let csv=
@@ -985,7 +978,6 @@ function exportCSV(){
    .replace(".",",")
    +
    "\n"
-
   }
  )
 
@@ -1015,7 +1007,6 @@ function exportCSV(){
   ()=>URL.revokeObjectURL(url),
   1000
  )
-
 }
 
 render()
