@@ -1,255 +1,339 @@
 <!doctype html>
 <html lang="fr">
+
 <head>
+
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="theme-color" content="#236443">
+
+<meta
+ name="viewport"
+ content="width=device-width,initial-scale=1,viewport-fit=cover"
+>
+
+<meta
+ name="apple-mobile-web-app-capable"
+ content="yes"
+>
+
+<meta
+ name="apple-mobile-web-app-status-bar-style"
+ content="default"
+>
+
+<meta
+ name="theme-color"
+ content="#236443"
+>
+
+<meta
+ http-equiv="Cache-Control"
+ content="no-cache, no-store, must-revalidate"
+>
+
 <title>Notes de frais</title>
 
 <style>
-*{box-sizing:border-box}
+
+*{
+ box-sizing:border-box
+}
+
 body{
-  margin:0;
-  background:#f5f7f6;
-  color:#101713;
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif
+ margin:0;
+ background:#f5f7f6;
+ color:#101713;
+ font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif
 }
 
 main{
-  max-width:700px;
-  margin:auto;
-  padding:30px 18px 110px
+ max-width:700px;
+ margin:auto;
+ padding:30px 18px 110px
 }
 
 .top{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:12px
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ gap:12px
 }
 
 .topRight{
-  display:flex;
-  gap:8px;
-  align-items:center
+ display:flex;
+ align-items:center;
+ gap:8px
 }
 
 h1{
-  font-size:36px;
-  margin:0 0 25px
+ font-size:36px;
+ margin:0 0 25px
+}
+
+.addBtn,
+.menuBtn{
+ width:44px;
+ height:44px;
+ border:0;
+ border-radius:50%;
+ font-size:28px
 }
 
 .addBtn{
-  width:44px;
-  height:44px;
-  border:0;
-  border-radius:50%;
-  background:#236443;
-  color:white;
-  font-size:30px;
-  line-height:1;
-  font-weight:400
+ background:#236443;
+ color:white
 }
 
-.export{
-  border:0;
-  background:white;
-  border-radius:20px;
-  padding:10px 13px
+.menuBtn{
+ background:white;
+ color:#101713;
+ font-size:22px;
+ font-weight:bold
+}
+
+.backupMenu{
+ position:absolute;
+ right:18px;
+ top:76px;
+ width:220px;
+ background:white;
+ border-radius:16px;
+ padding:8px;
+ box-shadow:0 10px 35px #0002;
+ z-index:50;
+ display:none
+}
+
+.backupMenu.open{
+ display:block
+}
+
+.backupMenu button{
+ display:block;
+ width:100%;
+ border:0;
+ background:white;
+ padding:13px;
+ text-align:left;
+ border-radius:10px;
+ font-size:16px
+}
+
+.backupMenu button:active{
+ background:#f1f3f2
 }
 
 .month{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin-bottom:20px
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ margin-bottom:20px
 }
 
 .month button{
-  border:0;
-  border-radius:50%;
-  width:48px;
-  height:48px;
-  font-size:28px;
-  color:#236443
+ border:0;
+ border-radius:50%;
+ width:48px;
+ height:48px;
+ font-size:28px;
+ color:#236443
 }
 
 .month strong{
-  font-size:23px
+ font-size:23px
 }
 
 .total{
-  background:#236443;
-  color:white;
-  padding:25px;
-  border-radius:28px;
-  margin-bottom:18px
+ background:#236443;
+ color:white;
+ padding:25px;
+ border-radius:28px;
+ margin-bottom:18px
 }
 
 .total small{
-  font-size:19px;
-  opacity:.8
+ font-size:19px;
+ opacity:.8
 }
 
 .total b{
-  display:block;
-  font-size:43px;
-  margin-top:8px
+ display:block;
+ font-size:43px;
+ margin-top:8px
 }
 
 .search{
-  width:100%;
-  border:1px solid #ddd;
-  border-radius:17px;
-  padding:15px;
-  font-size:18px;
-  margin-bottom:18px
+ width:100%;
+ border:1px solid #ddd;
+ border-radius:17px;
+ padding:15px;
+ font-size:18px;
+ margin-bottom:18px
 }
 
 .item{
-  background:white;
-  padding:14px;
-  border-radius:18px;
-  margin-bottom:11px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:10px;
-  cursor:pointer
+ background:white;
+ padding:14px;
+ border-radius:18px;
+ margin-bottom:11px;
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ gap:10px
 }
 
 .item:active{
-  transform:scale(.99)
+ transform:scale(.99)
 }
 
 .item span{
-  color:#6c746f;
-  font-size:14px
+ color:#6c746f;
+ font-size:14px
 }
 
 .item b:last-child{
-  white-space:nowrap
+ white-space:nowrap
 }
 
 .empty{
-  text-align:center;
-  color:#777;
-  padding:65px 10px
+ text-align:center;
+ color:#777;
+ padding:65px 10px
 }
 
 .bottom{
-  position:fixed;
-  bottom:0;
-  left:0;
-  right:0;
-  padding:15px 18px calc(env(safe-area-inset-bottom) + 10px);
-  background:#f5f7f6
+ position:fixed;
+ bottom:0;
+ left:0;
+ right:0;
+ padding:15px 18px calc(env(safe-area-inset-bottom) + 10px);
+ background:#f5f7f6
 }
 
 .scan{
-  display:block;
-  max-width:700px;
-  margin:auto;
-  width:100%;
-  height:62px;
-  border:0;
-  border-radius:32px;
-  background:#236443;
-  color:white;
-  font-weight:bold;
-  font-size:20px
+ display:block;
+ max-width:700px;
+ margin:auto;
+ width:100%;
+ height:62px;
+ border:0;
+ border-radius:32px;
+ background:#236443;
+ color:white;
+ font-weight:bold;
+ font-size:20px
 }
 
 .sheet{
-  display:none;
-  position:fixed;
-  inset:0;
-  background:#0008;
-  align-items:flex-end;
-  z-index:10
+ display:none;
+ position:fixed;
+ inset:0;
+ background:#0008;
+ align-items:flex-end;
+ z-index:100
 }
 
 .sheet.open{
-  display:flex
+ display:flex
 }
 
 .panel{
-  background:white;
-  width:100%;
-  max-width:700px;
-  margin:auto;
-  padding:20px 18px calc(env(safe-area-inset-bottom) + 18px);
-  border-radius:28px 28px 0 0;
-  max-height:93vh;
-  overflow:auto
+ background:white;
+ width:100%;
+ max-width:700px;
+ margin:auto;
+ padding:20px 18px calc(env(safe-area-inset-bottom) + 18px);
+ border-radius:28px 28px 0 0;
+ max-height:93vh;
+ overflow:auto
 }
 
 img{
-  width:100%;
-  max-height:250px;
-  object-fit:contain;
-  border-radius:15px
+ width:100%;
+ max-height:250px;
+ object-fit:contain;
+ border-radius:15px
 }
 
 label{
-  display:block;
-  margin:14px 0 6px;
-  font-weight:bold
+ display:block;
+ margin:14px 0 6px;
+ font-weight:bold
 }
 
 input.field{
-  width:100%;
-  height:50px;
-  border:1px solid #ddd;
-  border-radius:13px;
-  padding:10px;
-  font-size:17px
+ width:100%;
+ height:50px;
+ border:1px solid #ddd;
+ border-radius:13px;
+ padding:10px;
+ font-size:17px
 }
 
 .status{
-  margin:12px 0;
-  background:#eaf2ee;
-  color:#236443;
-  padding:12px;
-  border-radius:12px
+ margin:12px 0;
+ background:#eaf2ee;
+ color:#236443;
+ padding:12px;
+ border-radius:12px
 }
 
 .buttons{
-  display:flex;
-  gap:10px;
-  margin-top:20px
+ display:flex;
+ gap:10px;
+ margin-top:20px
 }
 
 .buttons button{
-  flex:1;
-  height:52px;
-  border:0;
-  border-radius:14px;
-  font-weight:bold
+ flex:1;
+ height:52px;
+ border:0;
+ border-radius:14px;
+ font-weight:bold
 }
 
 .cancel{
-  background:#eee
+ background:#eee
 }
 
 .save{
-  background:#236443;
-  color:white
+ background:#236443;
+ color:white
 }
 
 .delete{
-  width:100%;
-  height:52px;
-  margin-top:12px;
-  border:0;
-  border-radius:14px;
-  background:#fdecec;
-  color:#b42318;
-  font-weight:bold
+ width:100%;
+ height:52px;
+ margin-top:12px;
+ border:0;
+ border-radius:14px;
+ background:#fdecec;
+ color:#b42318;
+ font-weight:bold
 }
+
+.toast{
+ position:fixed;
+ left:50%;
+ bottom:100px;
+ transform:translateX(-50%) translateY(20px);
+ background:#111;
+ color:white;
+ padding:12px 16px;
+ border-radius:22px;
+ opacity:0;
+ transition:.25s;
+ z-index:500;
+ pointer-events:none;
+ white-space:nowrap
+}
+
+.toast.show{
+ opacity:1;
+ transform:translateX(-50%) translateY(0)
+}
+
 </style>
+
 </head>
 
 <body>
@@ -257,31 +341,79 @@ input.field{
 <main>
 
 <div class="top">
+
 <h1>Mes dépenses</h1>
 
 <div class="topRight">
-<button class="addBtn" onclick="openManualExpense()">+</button>
-<button class="export" onclick="exportCSV()">Exporter CSV</button>
+
+<button
+ class="addBtn"
+ onclick="openManualExpense()"
+>
++
+</button>
+
+<button
+ class="menuBtn"
+ onclick="toggleBackupMenu()"
+>
+•••
+</button>
+
 </div>
+
+</div>
+
+<div
+ class="backupMenu"
+ id="backupMenu"
+>
+
+<button onclick="exportCSV()">
+⬆️ Exporter CSV
+</button>
+
+<button onclick="startCSVImport()">
+⬇️ Importer CSV
+</button>
+
 </div>
 
 <div class="month">
-<button onclick="moveMonth(-1)">‹</button>
+
+<button onclick="moveMonth(-1)">
+‹
+</button>
+
 <strong id="month"></strong>
-<button onclick="moveMonth(1)">›</button>
+
+<button onclick="moveMonth(1)">
+›
+</button>
+
 </div>
 
 <div class="total">
-<small>Total du mois</small>
-<b id="total">0,00 €</b>
-<div id="count">0 dépense</div>
+
+<small>
+Total du mois
+</small>
+
+<b id="total">
+0,00 €
+</b>
+
+<div id="count">
+0 dépense
+</div>
+
 </div>
 
 <input
-  class="search"
-  id="search"
-  placeholder="🔍 Rechercher une dépense"
-  oninput="render()"
+ class="search"
+ id="search"
+ placeholder="🔍 Rechercher une dépense"
+ oninput="render()"
 >
 
 <div id="list"></div>
@@ -289,57 +421,104 @@ input.field{
 </main>
 
 <div class="bottom">
-<button class="scan" onclick="startScan()">
+
+<button
+ class="scan"
+ onclick="startScan()"
+>
 📷 Scanner un justificatif
 </button>
+
 </div>
 
 <input
-  hidden
-  id="camera"
-  type="file"
-  accept="image/*"
-  capture="environment"
+ hidden
+ id="camera"
+ type="file"
+ accept="image/*"
+ capture="environment"
 >
 
-<div class="sheet" id="sheet">
+<input
+ hidden
+ id="csvInput"
+ type="file"
+ accept=".csv,text/csv"
+>
+
+<div
+ class="sheet"
+ id="sheet"
+>
 
 <div class="panel">
 
-<h2 id="sheetTitle">Vérifier la dépense</h2>
+<h2 id="sheetTitle">
+Vérifier la dépense
+</h2>
 
 <img id="preview">
 
-<div class="status" id="status">
+<div
+ class="status"
+ id="status"
+>
 Analyse du ticket…
 </div>
 
-<label>Date</label>
-<input class="field" type="date" id="date">
+<label>
+Date
+</label>
 
-<label>Description / commerçant</label>
-<input class="field" id="merchant">
+<input
+ class="field"
+ type="date"
+ id="date"
+>
 
-<label>Montant (€)</label>
-<input class="field" type="number" step="0.01" id="amount">
+<label>
+Description / commerçant
+</label>
+
+<input
+ class="field"
+ id="merchant"
+>
+
+<label>
+Montant (€)
+</label>
+
+<input
+ class="field"
+ type="number"
+ step="0.01"
+ id="amount"
+>
 
 <div class="buttons">
 
-<button class="cancel" onclick="closeSheet()">
+<button
+ class="cancel"
+ onclick="closeSheet()"
+>
 Annuler
 </button>
 
-<button class="save" onclick="saveExpense()">
+<button
+ class="save"
+ onclick="saveExpense()"
+>
 Enregistrer
 </button>
 
 </div>
 
 <button
-  class="delete"
-  id="deleteButton"
-  onclick="deleteExpense()"
-  style="display:none"
+ class="delete"
+ id="deleteButton"
+ onclick="deleteExpense()"
+ style="display:none"
 >
 Supprimer cette dépense
 </button>
@@ -348,21 +527,61 @@ Supprimer cette dépense
 
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<div
+ class="toast"
+ id="toast"
+>
+Dépense enregistrée
+</div>
+
+<script
+ src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"
+></script>
 
 <script>
 
-let currentMonth=new Date()
+let currentMonth=
+new Date()
+
 let photo=""
+
 let ocr=""
+
 let editingId=null
 
 let expenses=
-JSON.parse(localStorage.getItem("expenses")||"[]")
+JSON.parse(
+ localStorage.getItem("expenses")
+ ||
+ "[]"
+)
 
-const $=x=>document.getElementById(x)
+const $=
+id=>
+document.getElementById(id)
+
+function showToast(message){
+
+ $("toast").textContent=
+ message
+
+ $("toast")
+ .classList
+ .add("show")
+
+ setTimeout(
+  ()=>{
+   $("toast")
+   .classList
+   .remove("show")
+  },
+  2200
+ )
+
+}
 
 function euro(n){
+
  return new Intl.NumberFormat(
   "fr-FR",
   {
@@ -370,35 +589,60 @@ function euro(n){
    currency:"EUR"
   }
  ).format(n||0)
+
 }
 
 function sameMonth(s,d){
- const x=new Date(s+"T12:00:00")
+
+ const x=
+ new Date(
+  s+"T12:00:00"
+ )
 
  return(
-  x.getMonth()==d.getMonth()
+  x.getMonth()===
+  d.getMonth()
   &&
-  x.getFullYear()==d.getFullYear()
+  x.getFullYear()===
+  d.getFullYear()
  )
+
 }
 
 function render(){
 
  const q=
- $("search").value.toLowerCase()
+ $("search")
+ .value
+ .toLowerCase()
+
+ const monthRows=
+ expenses
+ .filter(
+  x=>
+  sameMonth(
+   x.date,
+   currentMonth
+  )
+ )
 
  const rows=
- expenses
- .filter(x=>sameMonth(x.date,currentMonth))
+ monthRows
  .filter(
   x=>
   !q
   ||
-  x.merchant.toLowerCase().includes(q)
+  x.merchant
+   .toLowerCase()
+   .includes(q)
   ||
-  String(x.amount).includes(q)
+  String(x.amount)
+   .includes(q)
  )
- .sort((a,b)=>b.date.localeCompare(a.date))
+ .sort(
+  (a,b)=>
+  b.date.localeCompare(a.date)
+ )
 
  $("month").textContent=
  new Intl.DateTimeFormat(
@@ -410,8 +654,10 @@ function render(){
  ).format(currentMonth)
 
  const total=
- rows.reduce(
-  (s,x)=>s+Number(x.amount),
+ monthRows.reduce(
+  (sum,x)=>
+  sum+
+  Number(x.amount),
   0
  )
 
@@ -419,9 +665,15 @@ function render(){
  euro(total)
 
  $("count").textContent=
- rows.length+
+ monthRows.length+
  " dépense"+
- (rows.length>1?"s":"")
+ (
+  monthRows.length>1
+  ?
+  "s"
+  :
+  ""
+ )
 
  if(!rows.length){
 
@@ -436,28 +688,43 @@ function render(){
  }
 
  $("list").innerHTML=
- rows.map(x=>`
+ rows.map(
+  x=>`
 
- <div
+  <div
    class="item"
    onclick="openExpense(${x.id})"
- >
+  >
 
    <div>
-     <b>${escapeHTML(x.merchant)}</b>
-     <br>
-     <span>${formatDate(x.date)}</span>
+
+    <b>
+    ${escapeHTML(x.merchant)}
+    </b>
+
+    <br>
+
+    <span>
+    ${formatDate(x.date)}
+    </span>
+
    </div>
 
-   <b>${euro(x.amount)}</b>
+   <b>
+   ${euro(x.amount)}
+   </b>
 
- </div>
+  </div>
 
- `).join("")
+  `
+ ).join("")
+
 }
 
 function escapeHTML(s){
- return String(s).replace(
+
+ return String(s)
+ .replace(
   /[&<>"']/g,
   c=>({
    "&":"&amp;",
@@ -467,14 +734,29 @@ function escapeHTML(s){
    "'":"&#39;"
   })[c]
  )
+
 }
 
 function formatDate(s){
- const [y,m,d]=s.split("-")
- return d+"/"+m+"/"+y
+
+ const parts=
+ s.split("-")
+
+ if(parts.length!==3)
+ return s
+
+ return(
+  parts[2]+
+  "/"+
+  parts[1]+
+  "/"+
+  parts[0]
+ )
+
 }
 
 function moveMonth(n){
+
  currentMonth=
  new Date(
   currentMonth.getFullYear(),
@@ -483,7 +765,43 @@ function moveMonth(n){
  )
 
  render()
+
 }
+
+function toggleBackupMenu(){
+
+ $("backupMenu")
+ .classList
+ .toggle("open")
+
+}
+
+document.addEventListener(
+ "click",
+ e=>{
+
+  const menu=
+  $("backupMenu")
+
+  const menuButton=
+  document.querySelector(
+   ".menuBtn"
+  )
+
+  if(
+   !menu.contains(e.target)
+   &&
+   e.target!==menuButton
+  ){
+
+   menu
+   .classList
+   .remove("open")
+
+  }
+
+ }
+)
 
 function openManualExpense(){
 
@@ -500,18 +818,24 @@ function openManualExpense(){
  .slice(0,10)
 
  $("merchant").value=""
+
  $("amount").value=""
 
  $("preview").src=""
- $("preview").style.display="none"
 
- $("status").style.display="none"
+ $("preview").style.display=
+ "none"
 
- $("deleteButton").style.display="none"
+ $("status").style.display=
+ "none"
+
+ $("deleteButton").style.display=
+ "none"
 
  $("sheet")
  .classList
  .add("open")
+
 }
 
 function startScan(){
@@ -526,17 +850,18 @@ function startScan(){
  $("deleteButton").style.display=
  "none"
 
- document
- .getElementById("camera")
- .click()
+ $("camera").click()
+
 }
 
 $("camera").onchange=
 async e=>{
 
- const file=e.target.files[0]
+ const file=
+ e.target.files[0]
 
- if(!file)return
+ if(!file)
+ return
 
  $("date").value=
  new Date()
@@ -544,20 +869,23 @@ async e=>{
  .slice(0,10)
 
  $("merchant").value=""
+
  $("amount").value=""
 
- $("status").style.display="block"
+ $("status").style.display=
+ "block"
 
  $("status").textContent=
  "Analyse du ticket…"
 
- const r=
+ const reader=
  new FileReader()
 
- r.onload=
+ reader.onload=
  async()=>{
 
-  photo=r.result
+  photo=
+  reader.result
 
   $("preview").src=
   photo
@@ -590,108 +918,133 @@ async e=>{
         (m.progress||0)*100
        )+
        " %"
+
       }
+
      }
+
     }
    )
 
    ocr=
-   result.data.text||""
+   result.data.text
+   ||
+   ""
 
-   const date=
+   const detectedDate=
    findDate(ocr)
 
-   const amount=
+   const detectedAmount=
    findAmount(ocr)
 
-   const merchant=
+   const detectedMerchant=
    findMerchant(ocr)
 
-   if(date)
-   $("date").value=date
+   if(detectedDate)
+   $("date").value=
+   detectedDate
 
-   if(amount!==null)
+   if(
+    detectedAmount!==null
+   )
    $("amount").value=
-   amount.toFixed(2)
+   detectedAmount.toFixed(2)
 
    $("merchant").value=
-   merchant
+   detectedMerchant
 
    $("status").textContent=
    "Ticket analysé — vérifie puis enregistre."
+
   }
-  catch(err){
+  catch(error){
 
    $("status").textContent=
    "Lecture automatique impossible. Tu peux remplir les champs manuellement."
+
   }
+
  }
 
- r.readAsDataURL(file)
+ reader.readAsDataURL(file)
 
  e.target.value=""
+
 }
 
 function lines(text){
+
  return text
  .split(/\r?\n/)
- .map(x=>x.trim())
+ .map(
+  x=>x.trim()
+ )
  .filter(Boolean)
+
 }
 
 function findDate(text){
 
- let m=
+ let match=
  text.match(
   /\b([0-3]?\d)[\/.\-]([01]?\d)[\/.\-](\d{4})\b/
  )
 
- if(!m)
+ if(!match){
 
- m=
- text.match(
-  /\b([0-3]?\d)[\/.\-]([01]?\d)[\/.\-](\d{2})\b/
- )
+  match=
+  text.match(
+   /\b([0-3]?\d)[\/.\-]([01]?\d)[\/.\-](\d{2})\b/
+  )
 
- if(!m)return ""
+ }
 
- let y=
- Number(m[3])
+ if(!match)
+ return ""
 
- if(y<100)
- y+=2000
+ let year=
+ Number(match[3])
+
+ if(year<100)
+ year+=2000
 
  return(
-  y+
+  year+
   "-"+
-  String(Number(m[2]))
-  .padStart(2,"0")
+  String(
+   Number(match[2])
+  ).padStart(2,"0")
   +
   "-"+
-  String(Number(m[1]))
-  .padStart(2,"0")
+  String(
+   Number(match[1])
+  ).padStart(2,"0")
  )
+
 }
 
 function getAmount(line){
 
- const a=
+ const matches=
  [...line.matchAll(
   /(\d{1,6}[,.]\d{2})/g
  )]
 
- if(!a.length)
+ if(!matches.length)
  return null
 
  return Number(
-  a[a.length-1][1]
+  matches[
+   matches.length-1
+  ][1]
   .replace(",",".")
  )
+
 }
 
 function findAmount(text){
 
- const l=
+ const textLines=
  lines(text)
 
  const keys=[
@@ -704,29 +1057,34 @@ function findAmount(text){
   "MONTANT"
  ]
 
- for(const k of keys){
+ for(
+  const key of keys
+ ){
 
   for(
-   const x of
-   l
+   const line of
+   textLines
    .filter(
-    v=>
-    v.toUpperCase()
-    .includes(k)
+    x=>
+    x
+    .toUpperCase()
+    .includes(key)
    )
    .reverse()
   ){
 
-   const n=
-   getAmount(x)
+   const amount=
+   getAmount(line)
 
-   if(n!==null)
-   return n
+   if(amount!==null)
+   return amount
+
   }
+
  }
 
  const values=
- l
+ textLines
  .map(getAmount)
  .filter(
   x=>
@@ -742,6 +1100,7 @@ function findAmount(text){
   :
   null
  )
+
 }
 
 function findMerchant(text){
@@ -750,48 +1109,61 @@ function findMerchant(text){
  /ticket|facture|total|tva|merci|carte|visa|date|siret|www|http/i
 
  for(
-  const x of
+  const line of
   lines(text).slice(0,12)
  ){
 
   if(
-   x.length<3
+   line.length<3
    ||
-   x.length>60
+   line.length>60
    ||
-   ignore.test(x)
+   ignore.test(line)
   )
   continue
 
   if(
-   (x.match(
-    /[A-Za-zÀ-ÿ]/g
-   )||[]).length<3
+   (
+    line.match(
+     /[A-Za-zÀ-ÿ]/g
+    )
+    ||
+    []
+   ).length<3
   )
   continue
 
-  return x
+  return line
+
  }
 
  return "Dépense"
+
 }
 
 function openExpense(id){
 
  const expense=
  expenses.find(
-  x=>x.id===id
+  x=>
+  x.id===id
  )
 
- if(!expense)return
+ if(!expense)
+ return
 
- editingId=id
+ editingId=
+ id
 
  photo=
- expense.photo||""
+ expense.photo
+ ||
+ ""
 
  ocr=
- expense.ocr||""
+ expense.ocr
+ ||
+ ""
 
  $("sheetTitle").textContent=
  "Modifier la dépense"
@@ -806,7 +1178,7 @@ function openExpense(id){
  expense.amount
 
  $("preview").src=
- photo||""
+ photo
 
  $("preview").style.display=
  photo
@@ -824,6 +1196,7 @@ function openExpense(id){
  $("sheet")
  .classList
  .add("open")
+
 }
 
 function closeSheet(){
@@ -834,8 +1207,6 @@ function closeSheet(){
 
  editingId=null
 
- $("preview").style.display=
- "block"
 }
 
 function saveExpense(){
@@ -858,7 +1229,9 @@ function saveExpense(){
   ||
   !merchant
   ||
-  !amount
+  !Number.isFinite(amount)
+  ||
+  amount<=0
  ){
 
   alert(
@@ -866,45 +1239,59 @@ function saveExpense(){
   )
 
   return
+
  }
 
  if(editingId){
 
-  const i=
+  const index=
   expenses.findIndex(
-   x=>x.id===editingId
+   x=>
+   x.id===editingId
   )
 
-  if(i!==-1){
+  if(index!==-1){
 
-   expenses[i]={
-    ...expenses[i],
+   expenses[index]={
+    ...expenses[index],
     date,
     merchant,
     amount
    }
+
   }
+
  }
  else{
 
   expenses.push({
+
    id:Date.now(),
+
    date,
+
    merchant,
+
    amount,
+
    ocr,
+
    photo
+
   })
+
  }
 
- localStorage.setItem(
-  "expenses",
-  JSON.stringify(expenses)
- )
+ saveLocal()
 
  closeSheet()
 
  render()
+
+ showToast(
+  "Dépense enregistrée"
+ )
+
 }
 
 function deleteExpense(){
@@ -914,13 +1301,14 @@ function deleteExpense(){
 
  const expense=
  expenses.find(
-  x=>x.id===editingId
+  x=>
+  x.id===editingId
  )
 
  if(!expense)
  return
 
- const ok=
+ const confirmed=
  confirm(
   "Supprimer cette dépense ?\n\n"+
   expense.merchant+
@@ -928,25 +1316,41 @@ function deleteExpense(){
   euro(expense.amount)
  )
 
- if(!ok)
+ if(!confirmed)
  return
 
  expenses=
  expenses.filter(
-  x=>x.id!==editingId
+  x=>
+  x.id!==editingId
  )
+
+ saveLocal()
+
+ closeSheet()
+
+ render()
+
+ showToast(
+  "Dépense supprimée"
+ )
+
+}
+
+function saveLocal(){
 
  localStorage.setItem(
   "expenses",
   JSON.stringify(expenses)
  )
 
- closeSheet()
-
- render()
 }
 
 function exportCSV(){
+
+ $("backupMenu")
+ .classList
+ .remove("open")
 
  if(!expenses.length){
 
@@ -955,31 +1359,45 @@ function exportCSV(){
   )
 
   return
+
  }
+
+ const sorted=
+ [...expenses]
+ .sort(
+  (a,b)=>
+  a.date.localeCompare(b.date)
+ )
 
  let csv=
  "\uFEFFDate;Description;Montant\n"
 
- expenses.forEach(
-  x=>{
+ for(
+  const expense of sorted
+ ){
 
-   csv+=
-   formatDate(x.date)
-   +
-   ";"
-   +
-   x.merchant
-   .replaceAll(";"," ")
-   +
-   ";"
-   +
-   Number(x.amount)
-   .toFixed(2)
-   .replace(".",",")
-   +
-   "\n"
-  }
- )
+  csv+=
+  csvEscape(
+   formatDate(expense.date)
+  )
+  +
+  ";"
+  +
+  csvEscape(
+   expense.merchant
+  )
+  +
+  ";"
+  +
+  Number(
+   expense.amount
+  )
+  .toFixed(2)
+  .replace(".",",")
+  +
+  "\n"
+
+ }
 
  const blob=
  new Blob(
@@ -993,20 +1411,611 @@ function exportCSV(){
  const url=
  URL.createObjectURL(blob)
 
- const a=
+ const link=
  document.createElement("a")
 
- a.href=url
+ link.href=
+ url
 
- a.download=
+ link.download=
  "notes-de-frais.csv"
 
- a.click()
+ link.click()
 
  setTimeout(
-  ()=>URL.revokeObjectURL(url),
+  ()=>{
+   URL.revokeObjectURL(url)
+  },
   1000
  )
+
+}
+
+function csvEscape(value){
+
+ value=
+ String(
+  value
+  ??
+  ""
+ )
+
+ if(
+  value.includes(";")
+  ||
+  value.includes('"')
+  ||
+  value.includes("\n")
+ ){
+
+  return(
+   '"'+
+   value.replaceAll(
+    '"',
+    '""'
+   )+
+   '"'
+  )
+
+ }
+
+ return value
+
+}
+
+function startCSVImport(){
+
+ $("backupMenu")
+ .classList
+ .remove("open")
+
+ $("csvInput").click()
+
+}
+
+$("csvInput").onchange=
+e=>{
+
+ const file=
+ e.target.files[0]
+
+ if(!file)
+ return
+
+ const reader=
+ new FileReader()
+
+ reader.onload=
+ ()=>{
+
+  try{
+
+   importCSVText(
+    reader.result
+   )
+
+  }
+  catch(error){
+
+   alert(
+    "Impossible de lire ce fichier CSV."
+   )
+
+  }
+
+ }
+
+ reader.readAsText(
+  file,
+  "UTF-8"
+ )
+
+ e.target.value=""
+
+}
+
+function importCSVText(text){
+
+ text=
+ String(text)
+ .replace(
+  /^\uFEFF/,
+  ""
+ )
+
+ const rows=
+ parseCSV(text)
+
+ if(
+  rows.length<2
+ ){
+
+  alert(
+   "Le fichier CSV ne contient aucune dépense."
+  )
+
+  return
+
+ }
+
+ const headers=
+ rows[0]
+ .map(
+  x=>
+  x
+  .trim()
+  .toLowerCase()
+ )
+
+ const dateIndex=
+ headers.findIndex(
+  x=>
+  x==="date"
+ )
+
+ const descriptionIndex=
+ headers.findIndex(
+  x=>
+  x==="description"
+  ||
+  x==="commerçant"
+  ||
+  x==="commercant"
+ )
+
+ const amountIndex=
+ headers.findIndex(
+  x=>
+  x==="montant"
+  ||
+  x==="amount"
+ )
+
+ if(
+  dateIndex===-1
+  ||
+  descriptionIndex===-1
+  ||
+  amountIndex===-1
+ ){
+
+  alert(
+   "CSV non reconnu.\n\nColonnes attendues : Date ; Description ; Montant"
+  )
+
+  return
+
+ }
+
+ let imported=0
+ let duplicates=0
+ let invalid=0
+
+ for(
+  let i=1;
+  i<rows.length;
+  i++
+ ){
+
+  const row=
+  rows[i]
+
+  if(
+   !row
+   ||
+   !row.length
+  )
+  continue
+
+  const date=
+  parseImportedDate(
+   row[dateIndex]
+  )
+
+  const merchant=
+  String(
+   row[descriptionIndex]
+   ??
+   ""
+  ).trim()
+
+  const amount=
+  parseImportedAmount(
+   row[amountIndex]
+  )
+
+  if(
+   !date
+   ||
+   !merchant
+   ||
+   amount===null
+  ){
+
+   invalid++
+
+   continue
+
+  }
+
+  const duplicate=
+  expenses.some(
+   x=>
+   sameExpense(
+    x,
+    {
+     date,
+     merchant,
+     amount
+    }
+   )
+  )
+
+  if(duplicate){
+
+   duplicates++
+
+   continue
+
+  }
+
+  expenses.push({
+
+   id:
+   Date.now()
+   +
+   i
+   +
+   Math.floor(
+    Math.random()*1000
+   ),
+
+   date,
+
+   merchant,
+
+   amount,
+
+   ocr:"",
+
+   photo:""
+
+  })
+
+  imported++
+
+ }
+
+ saveLocal()
+
+ render()
+
+ let message=
+ imported+
+ " dépense"+
+ (
+  imported>1
+  ?
+  "s"
+  :
+  ""
+ )+
+ " importée"+
+ (
+  imported>1
+  ?
+  "s"
+  :
+  ""
+ )
+
+ if(duplicates){
+
+  message+=
+  "\n"+
+  duplicates+
+  " doublon"+
+  (
+   duplicates>1
+   ?
+   "s"
+   :
+   ""
+  )+
+  " ignoré"+
+  (
+   duplicates>1
+   ?
+   "s"
+   :
+   ""
+  )
+
+ }
+
+ if(invalid){
+
+  message+=
+  "\n"+
+  invalid+
+  " ligne"+
+  (
+   invalid>1
+   ?
+   "s"
+   :
+   ""
+  )+
+  " non reconnue"+
+  (
+   invalid>1
+   ?
+   "s"
+   :
+   ""
+  )
+
+ }
+
+ alert(message)
+
+}
+
+function parseCSV(text){
+
+ const rows=[]
+
+ let row=[]
+ let cell=""
+ let quoted=false
+
+ for(
+  let i=0;
+  i<text.length;
+  i++
+ ){
+
+  const char=
+  text[i]
+
+  const next=
+  text[i+1]
+
+  if(char==='"'){
+
+   if(
+    quoted
+    &&
+    next==='"'
+   ){
+
+    cell+='"'
+
+    i++
+
+   }
+   else{
+
+    quoted=
+    !quoted
+
+   }
+
+   continue
+
+  }
+
+  if(
+   char===';'
+   &&
+   !quoted
+  ){
+
+   row.push(cell)
+
+   cell=""
+
+   continue
+
+  }
+
+  if(
+   (
+    char==="\n"
+    ||
+    char==="\r"
+   )
+   &&
+   !quoted
+  ){
+
+   if(
+    char==="\r"
+    &&
+    next==="\n"
+   ){
+
+    i++
+
+   }
+
+   row.push(cell)
+
+   if(
+    row.some(
+     value=>
+     String(value)
+     .trim()!==""
+    )
+   ){
+
+    rows.push(row)
+
+   }
+
+   row=[]
+   cell=""
+
+   continue
+
+  }
+
+  cell+=char
+
+ }
+
+ if(
+  cell!==""
+  ||
+  row.length
+ ){
+
+  row.push(cell)
+
+  if(
+   row.some(
+    value=>
+    String(value)
+    .trim()!==""
+   )
+  ){
+
+   rows.push(row)
+
+  }
+
+ }
+
+ return rows
+
+}
+
+function parseImportedDate(value){
+
+ const text=
+ String(
+  value
+  ??
+  ""
+ )
+ .trim()
+
+ let match=
+ text.match(
+  /^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{4})$/
+ )
+
+ if(match){
+
+  return(
+   match[3]+
+   "-"+
+   String(
+    Number(match[2])
+   ).padStart(2,"0")
+   +
+   "-"+
+   String(
+    Number(match[1])
+   ).padStart(2,"0")
+  )
+
+ }
+
+ match=
+ text.match(
+  /^(\d{4})-(\d{1,2})-(\d{1,2})$/
+ )
+
+ if(match){
+
+  return(
+   match[1]+
+   "-"+
+   String(
+    Number(match[2])
+   ).padStart(2,"0")
+   +
+   "-"+
+   String(
+    Number(match[3])
+   ).padStart(2,"0")
+  )
+
+ }
+
+ return ""
+
+}
+
+function parseImportedAmount(value){
+
+ const text=
+ String(
+  value
+  ??
+  ""
+ )
+ .trim()
+ .replace(/\s/g,"")
+ .replace("€","")
+ .replace(",",".")
+
+ const amount=
+ Number(text)
+
+ if(
+  !Number.isFinite(amount)
+  ||
+  amount<=0
+ ){
+
+  return null
+
+ }
+
+ return amount
+
+}
+
+function normalizeMerchant(value){
+
+ return String(value)
+ .trim()
+ .toLowerCase()
+ .normalize("NFD")
+ .replace(
+  /[\u0300-\u036f]/g,
+  ""
+ )
+ .replace(
+  /\s+/g,
+  " "
+ )
+
+}
+
+function sameExpense(a,b){
+
+ return(
+  a.date===
+  b.date
+  &&
+  normalizeMerchant(
+   a.merchant
+  )===
+  normalizeMerchant(
+   b.merchant
+  )
+  &&
+  Math.round(
+   Number(a.amount)*100
+  )===
+  Math.round(
+   Number(b.amount)*100
+  )
+ )
+
 }
 
 render()
@@ -1014,4 +2023,5 @@ render()
 </script>
 
 </body>
+
 </html>
