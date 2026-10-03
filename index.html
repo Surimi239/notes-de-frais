@@ -48,24 +48,24 @@ body{
 main{
  max-width:700px;
  margin:auto;
- padding:30px 18px 110px
+ padding:30px 18px 125px
 }
 
 .top{
  display:flex;
  justify-content:space-between;
- align-items:center;
- gap:12px
+ align-items:flex-start;
+ gap:10px
 }
 
 .topRight{
  display:flex;
  align-items:center;
- gap:8px
+ gap:7px
 }
 
 h1{
- font-size:36px;
+ font-size:34px;
  margin:0 0 25px
 }
 
@@ -75,25 +75,37 @@ h1{
  height:44px;
  border:0;
  border-radius:50%;
- font-size:28px
+ flex-shrink:0
 }
 
 .addBtn{
  background:#236443;
- color:white
+ color:white;
+ font-size:28px
 }
 
 .menuBtn{
  background:white;
  color:#101713;
- font-size:22px;
+ font-size:21px;
  font-weight:bold
+}
+
+.selectBtn{
+ height:44px;
+ border:0;
+ border-radius:22px;
+ padding:0 13px;
+ background:white;
+ color:#236443;
+ font-weight:bold;
+ font-size:14px
 }
 
 .backupMenu{
  position:absolute;
  right:18px;
- top:76px;
+ top:78px;
  width:220px;
  background:white;
  border-radius:16px;
@@ -116,10 +128,6 @@ h1{
  text-align:left;
  border-radius:10px;
  font-size:16px
-}
-
-.backupMenu button:active{
- background:#f1f3f2
 }
 
 .month{
@@ -161,6 +169,12 @@ h1{
  margin-top:8px
 }
 
+.summary{
+ margin-top:13px;
+ font-size:14px;
+ line-height:1.6
+}
+
 .search{
  width:100%;
  border:1px solid #ddd;
@@ -181,8 +195,22 @@ h1{
  gap:10px
 }
 
-.item:active{
- transform:scale(.99)
+.itemLeft{
+ display:flex;
+ align-items:center;
+ gap:12px;
+ min-width:0
+}
+
+.itemText{
+ min-width:0
+}
+
+.itemText b{
+ display:block;
+ overflow:hidden;
+ text-overflow:ellipsis;
+ white-space:nowrap
 }
 
 .item span{
@@ -190,8 +218,51 @@ h1{
  font-size:14px
 }
 
-.item b:last-child{
- white-space:nowrap
+.itemRight{
+ text-align:right;
+ flex-shrink:0
+}
+
+.check{
+ width:24px;
+ height:24px;
+ border-radius:50%;
+ border:2px solid #b7c0ba;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ font-size:15px;
+ color:white;
+ flex-shrink:0
+}
+
+.check.selected{
+ background:#236443;
+ border-color:#236443
+}
+
+.badge{
+ display:inline-block;
+ margin-top:5px;
+ padding:4px 8px;
+ border-radius:12px;
+ font-size:12px;
+ font-weight:bold
+}
+
+.badge.to_send{
+ background:#f4eee2;
+ color:#7a5820
+}
+
+.badge.sent{
+ background:#e6eef9;
+ color:#315e8d
+}
+
+.badge.reimbursed{
+ background:#e4f3e9;
+ color:#236443
 }
 
 .empty{
@@ -206,7 +277,8 @@ h1{
  left:0;
  right:0;
  padding:15px 18px calc(env(safe-area-inset-bottom) + 10px);
- background:#f5f7f6
+ background:#f5f7f6;
+ z-index:20
 }
 
 .scan{
@@ -221,6 +293,42 @@ h1{
  color:white;
  font-weight:bold;
  font-size:20px
+}
+
+.batchBar{
+ display:none;
+ max-width:700px;
+ margin:auto;
+ gap:7px
+}
+
+.batchBar.open{
+ display:flex
+}
+
+.batchBar button{
+ flex:1;
+ min-height:55px;
+ border:0;
+ border-radius:18px;
+ padding:7px;
+ font-size:13px;
+ font-weight:bold
+}
+
+.batchSend{
+ background:#f4eee2;
+ color:#7a5820
+}
+
+.batchSent{
+ background:#e6eef9;
+ color:#315e8d
+}
+
+.batchPaid{
+ background:#236443;
+ color:white
 }
 
 .sheet{
@@ -260,13 +368,22 @@ label{
  font-weight:bold
 }
 
-input.field{
+input.field,
+select.field{
  width:100%;
  height:50px;
  border:1px solid #ddd;
  border-radius:13px;
  padding:10px;
- font-size:17px
+ font-size:17px;
+ background:white
+}
+
+.statusBox{
+ margin-top:10px;
+ color:#6c746f;
+ font-size:14px;
+ line-height:1.5
 }
 
 .status{
@@ -314,7 +431,7 @@ input.field{
 .toast{
  position:fixed;
  left:50%;
- bottom:100px;
+ bottom:105px;
  transform:translateX(-50%) translateY(20px);
  background:#111;
  color:white;
@@ -345,6 +462,14 @@ input.field{
 <h1>Mes dépenses</h1>
 
 <div class="topRight">
+
+<button
+ class="selectBtn"
+ id="selectBtn"
+ onclick="toggleSelectionMode()"
+>
+Sélectionner
+</button>
 
 <button
  class="addBtn"
@@ -407,6 +532,11 @@ Total du mois
 0 dépense
 </div>
 
+<div
+ class="summary"
+ id="summary"
+></div>
+
 </div>
 
 <input
@@ -424,10 +554,39 @@ Total du mois
 
 <button
  class="scan"
+ id="scanButton"
  onclick="startScan()"
 >
 📷 Scanner un justificatif
 </button>
+
+<div
+ class="batchBar"
+ id="batchBar"
+>
+
+<button
+ class="batchSend"
+ onclick="batchStatus('to_send')"
+>
+À envoyer
+</button>
+
+<button
+ class="batchSent"
+ onclick="batchStatus('sent')"
+>
+Envoyées
+</button>
+
+<button
+ class="batchPaid"
+ onclick="batchStatus('reimbursed')"
+>
+Remboursées
+</button>
+
+</div>
 
 </div>
 
@@ -461,14 +620,12 @@ Vérifier la dépense
 
 <div
  class="status"
- id="status"
+ id="ocrStatus"
 >
 Analyse du ticket…
 </div>
 
-<label>
-Date
-</label>
+<label>Date</label>
 
 <input
  class="field"
@@ -476,18 +633,14 @@ Date
  id="date"
 >
 
-<label>
-Description / commerçant
-</label>
+<label>Description / commerçant</label>
 
 <input
  class="field"
  id="merchant"
 >
 
-<label>
-Montant (€)
-</label>
+<label>Montant (€)</label>
 
 <input
  class="field"
@@ -495,6 +648,32 @@ Montant (€)
  step="0.01"
  id="amount"
 >
+
+<label>Statut du remboursement</label>
+
+<select
+ class="field"
+ id="expenseStatus"
+ onchange="updateStatusInfo()"
+>
+<option value="to_send">
+À envoyer
+</option>
+
+<option value="sent">
+Envoyée
+</option>
+
+<option value="reimbursed">
+Remboursée
+</option>
+
+</select>
+
+<div
+ class="statusBox"
+ id="statusInfo"
+></div>
 
 <div class="buttons">
 
@@ -549,6 +728,12 @@ let ocr=""
 
 let editingId=null
 
+let selectionMode=false
+
+let selectedIds=new Set()
+
+let originalStatus=null
+
 let expenses=
 JSON.parse(
  localStorage.getItem("expenses")
@@ -556,9 +741,29 @@ JSON.parse(
  "[]"
 )
 
+expenses=
+expenses.map(
+ x=>({
+  ...x,
+  status:x.status||"to_send",
+  sentDate:x.sentDate||"",
+  reimbursedDate:x.reimbursedDate||""
+ })
+)
+
+saveLocal()
+
 const $=
 id=>
 document.getElementById(id)
+
+function today(){
+
+ return new Date()
+ .toISOString()
+ .slice(0,10)
+
+}
 
 function showToast(message){
 
@@ -606,6 +811,18 @@ function sameMonth(s,d){
   x.getFullYear()===
   d.getFullYear()
  )
+
+}
+
+function statusLabel(status){
+
+ if(status==="sent")
+ return "Envoyée"
+
+ if(status==="reimbursed")
+ return "Remboursée"
+
+ return "À envoyer"
 
 }
 
@@ -675,6 +892,35 @@ function render(){
   ""
  )
 
+ const toSend=
+ monthRows.filter(
+  x=>
+  x.status==="to_send"
+ ).length
+
+ const sent=
+ monthRows.filter(
+  x=>
+  x.status==="sent"
+ ).length
+
+ const paid=
+ monthRows.filter(
+  x=>
+  x.status==="reimbursed"
+ ).length
+
+ $("summary").textContent=
+ toSend+
+ " à envoyer • "+
+ sent+
+ " envoyée"+
+ (sent>1?"s":"")+
+ " • "+
+ paid+
+ " remboursée"+
+ (paid>1?"s":"")
+
  if(!rows.length){
 
   $("list").innerHTML=
@@ -685,39 +931,201 @@ function render(){
   '</div>'
 
   return
+
  }
 
  $("list").innerHTML=
  rows.map(
-  x=>`
+  x=>{
 
-  <div
-   class="item"
-   onclick="openExpense(${x.id})"
-  >
+   const selected=
+   selectedIds.has(x.id)
 
-   <div>
+   const check=
+   selectionMode
+   ?
+   `
+   <div class="check ${selected?"selected":""}">
+   ${selected?"✓":""}
+   </div>
+   `
+   :
+   ""
 
-    <b>
-    ${escapeHTML(x.merchant)}
-    </b>
+   return`
 
-    <br>
+   <div
+    class="item"
+    onclick="handleExpenseClick(${x.id})"
+   >
 
-    <span>
-    ${formatDate(x.date)}
-    </span>
+    <div class="itemLeft">
+
+     ${check}
+
+     <div class="itemText">
+
+      <b>
+      ${escapeHTML(x.merchant)}
+      </b>
+
+      <span>
+      ${formatDate(x.date)}
+      </span>
+
+      <div
+       class="badge ${x.status}"
+      >
+      ${statusLabel(x.status)}
+      </div>
+
+     </div>
+
+    </div>
+
+    <div class="itemRight">
+
+     <b>
+     ${euro(x.amount)}
+     </b>
+
+    </div>
 
    </div>
 
-   <b>
-   ${euro(x.amount)}
-   </b>
-
-  </div>
-
-  `
+   `
+  }
  ).join("")
+
+}
+
+function handleExpenseClick(id){
+
+ if(selectionMode){
+
+  if(selectedIds.has(id))
+  selectedIds.delete(id)
+  else
+  selectedIds.add(id)
+
+  render()
+
+  return
+
+ }
+
+ openExpense(id)
+
+}
+
+function toggleSelectionMode(){
+
+ selectionMode=
+ !selectionMode
+
+ selectedIds.clear()
+
+ $("selectBtn").textContent=
+ selectionMode
+ ?
+ "Annuler"
+ :
+ "Sélectionner"
+
+ $("scanButton").style.display=
+ selectionMode
+ ?
+ "none"
+ :
+ "block"
+
+ $("batchBar")
+ .classList
+ .toggle(
+  "open",
+  selectionMode
+ )
+
+ render()
+
+}
+
+function batchStatus(newStatus){
+
+ if(!selectedIds.size){
+
+  alert(
+   "Sélectionne au moins une dépense."
+  )
+
+  return
+
+ }
+
+ const date=
+ today()
+
+ expenses=
+ expenses.map(
+  expense=>{
+
+   if(
+    !selectedIds.has(expense.id)
+   )
+   return expense
+
+   if(
+    newStatus==="to_send"
+   ){
+
+    return{
+     ...expense,
+     status:"to_send",
+     sentDate:"",
+     reimbursedDate:""
+    }
+
+   }
+
+   if(
+    newStatus==="sent"
+   ){
+
+    return{
+     ...expense,
+     status:"sent",
+     sentDate:date,
+     reimbursedDate:""
+    }
+
+   }
+
+   return{
+    ...expense,
+    status:"reimbursed",
+    sentDate:
+     expense.sentDate||date,
+    reimbursedDate:date
+   }
+
+  }
+ )
+
+ const count=
+ selectedIds.size
+
+ saveLocal()
+
+ toggleSelectionMode()
+
+ showToast(
+  count+
+  " dépense"+
+  (count>1?"s":"")+
+  " mise"+
+  (count>1?"s":"")+
+  " à jour"
+ )
 
 }
 
@@ -738,6 +1146,9 @@ function escapeHTML(s){
 }
 
 function formatDate(s){
+
+ if(!s)
+ return ""
 
  const parts=
  s.split("-")
@@ -763,6 +1174,8 @@ function moveMonth(n){
   currentMonth.getMonth()+n,
   1
  )
+
+ selectedIds.clear()
 
  render()
 
@@ -806,6 +1219,7 @@ document.addEventListener(
 function openManualExpense(){
 
  editingId=null
+ originalStatus=null
  photo=""
  ocr=""
 
@@ -813,24 +1227,27 @@ function openManualExpense(){
  "Nouvelle dépense"
 
  $("date").value=
- new Date()
- .toISOString()
- .slice(0,10)
+ today()
 
  $("merchant").value=""
 
  $("amount").value=""
+
+ $("expenseStatus").value=
+ "to_send"
 
  $("preview").src=""
 
  $("preview").style.display=
  "none"
 
- $("status").style.display=
+ $("ocrStatus").style.display=
  "none"
 
  $("deleteButton").style.display=
  "none"
+
+ updateStatusInfo()
 
  $("sheet")
  .classList
@@ -841,11 +1258,15 @@ function openManualExpense(){
 function startScan(){
 
  editingId=null
+ originalStatus=null
  photo=""
  ocr=""
 
  $("sheetTitle").textContent=
  "Vérifier la dépense"
+
+ $("expenseStatus").value=
+ "to_send"
 
  $("deleteButton").style.display=
  "none"
@@ -864,18 +1285,21 @@ async e=>{
  return
 
  $("date").value=
- new Date()
- .toISOString()
- .slice(0,10)
+ today()
 
  $("merchant").value=""
 
  $("amount").value=""
 
- $("status").style.display=
+ $("expenseStatus").value=
+ "to_send"
+
+ updateStatusInfo()
+
+ $("ocrStatus").style.display=
  "block"
 
- $("status").textContent=
+ $("ocrStatus").textContent=
  "Analyse du ticket…"
 
  const reader=
@@ -904,7 +1328,6 @@ async e=>{
     photo,
     "fra+eng",
     {
-
      logger:m=>{
 
       if(
@@ -912,7 +1335,7 @@ async e=>{
        "recognizing text"
       ){
 
-       $("status").textContent=
+       $("ocrStatus").textContent=
        "Lecture du ticket… "+
        Math.round(
         (m.progress||0)*100
@@ -922,7 +1345,6 @@ async e=>{
       }
 
      }
-
     }
    )
 
@@ -953,13 +1375,13 @@ async e=>{
    $("merchant").value=
    detectedMerchant
 
-   $("status").textContent=
+   $("ocrStatus").textContent=
    "Ticket analysé — vérifie puis enregistre."
 
   }
   catch(error){
 
-   $("status").textContent=
+   $("ocrStatus").textContent=
    "Lecture automatique impossible. Tu peux remplir les champs manuellement."
 
   }
@@ -1155,6 +1577,9 @@ function openExpense(id){
  editingId=
  id
 
+ originalStatus=
+ expense.status||"to_send"
+
  photo=
  expense.photo
  ||
@@ -1177,6 +1602,9 @@ function openExpense(id){
  $("amount").value=
  expense.amount
 
+ $("expenseStatus").value=
+ expense.status||"to_send"
+
  $("preview").src=
  photo
 
@@ -1187,15 +1615,63 @@ function openExpense(id){
  :
  "none"
 
- $("status").style.display=
+ $("ocrStatus").style.display=
  "none"
 
  $("deleteButton").style.display=
  "block"
 
+ updateStatusInfo(expense)
+
  $("sheet")
  .classList
  .add("open")
+
+}
+
+function updateStatusInfo(expense){
+
+ if(!expense&&editingId){
+
+  expense=
+  expenses.find(
+   x=>
+   x.id===editingId
+  )
+
+ }
+
+ let text=""
+
+ if(
+  expense?.sentDate
+ ){
+
+  text+=
+  "Envoyée le "+
+  formatDate(
+   expense.sentDate
+  )
+
+ }
+
+ if(
+  expense?.reimbursedDate
+ ){
+
+  if(text)
+  text+=" • "
+
+  text+=
+  "Remboursée le "+
+  formatDate(
+   expense.reimbursedDate
+  )
+
+ }
+
+ $("statusInfo").textContent=
+ text
 
 }
 
@@ -1206,6 +1682,7 @@ function closeSheet(){
  .remove("open")
 
  editingId=null
+ originalStatus=null
 
 }
 
@@ -1223,6 +1700,9 @@ function saveExpense(){
  Number(
   $("amount").value
  )
+
+ const newStatus=
+ $("expenseStatus").value
 
  if(
   !date
@@ -1252,17 +1732,73 @@ function saveExpense(){
 
   if(index!==-1){
 
+   let sentDate=
+   expenses[index].sentDate||""
+
+   let reimbursedDate=
+   expenses[index].reimbursedDate||""
+
+   if(newStatus==="to_send"){
+
+    sentDate=""
+    reimbursedDate=""
+
+   }
+
+   if(newStatus==="sent"){
+
+    if(
+     originalStatus!=="sent"
+     &&
+     !sentDate
+    )
+    sentDate=today()
+
+    reimbursedDate=""
+
+   }
+
+   if(newStatus==="reimbursed"){
+
+    if(!sentDate)
+    sentDate=today()
+
+    if(
+     originalStatus!=="reimbursed"
+     &&
+     !reimbursedDate
+    )
+    reimbursedDate=today()
+
+   }
+
    expenses[index]={
     ...expenses[index],
     date,
     merchant,
-    amount
+    amount,
+    status:newStatus,
+    sentDate,
+    reimbursedDate
    }
 
   }
 
  }
  else{
+
+  let sentDate=""
+  let reimbursedDate=""
+
+  if(newStatus==="sent")
+  sentDate=today()
+
+  if(newStatus==="reimbursed"){
+
+   sentDate=today()
+   reimbursedDate=today()
+
+  }
 
   expenses.push({
 
@@ -1273,6 +1809,12 @@ function saveExpense(){
    merchant,
 
    amount,
+
+   status:newStatus,
+
+   sentDate,
+
+   reimbursedDate,
 
    ocr,
 
@@ -1370,7 +1912,7 @@ function exportCSV(){
  )
 
  let csv=
- "\uFEFFDate;Description;Montant\n"
+ "\uFEFFDate;Description;Montant;Statut;Date envoi;Date remboursement\n"
 
  for(
   const expense of sorted
@@ -1394,6 +1936,30 @@ function exportCSV(){
   )
   .toFixed(2)
   .replace(".",",")
+  +
+  ";"
+  +
+  csvEscape(
+   statusLabel(
+    expense.status||"to_send"
+   )
+  )
+  +
+  ";"
+  +
+  csvEscape(
+   formatDate(
+    expense.sentDate||""
+   )
+  )
+  +
+  ";"
+  +
+  csvEscape(
+   formatDate(
+    expense.reimbursedDate||""
+   )
+  )
   +
   "\n"
 
@@ -1571,6 +2137,30 @@ function importCSVText(text){
   x==="amount"
  )
 
+ const statusIndex=
+ headers.findIndex(
+  x=>
+  x==="statut"
+  ||
+  x==="status"
+ )
+
+ const sentIndex=
+ headers.findIndex(
+  x=>
+  x==="date envoi"
+  ||
+  x==="date d'envoi"
+ )
+
+ const reimbursedIndex=
+ headers.findIndex(
+  x=>
+  x==="date remboursement"
+  ||
+  x==="date de remboursement"
+ )
+
  if(
   dateIndex===-1
   ||
@@ -1599,13 +2189,6 @@ function importCSVText(text){
 
   const row=
   rows[i]
-
-  if(
-   !row
-   ||
-   !row.length
-  )
-  continue
 
   const date=
   parseImportedDate(
@@ -1659,6 +2242,49 @@ function importCSVText(text){
 
   }
 
+  let status="to_send"
+
+  if(statusIndex!==-1){
+
+   const value=
+   String(
+    row[statusIndex]||""
+   )
+   .trim()
+   .toLowerCase()
+
+   if(
+    value.includes("rembours")
+   )
+   status="reimbursed"
+
+   else if(
+    value.includes("envoy")
+    &&
+    !value.includes("à envoyer")
+   )
+   status="sent"
+
+  }
+
+  const sentDate=
+  sentIndex!==-1
+  ?
+  parseImportedDate(
+   row[sentIndex]
+  )
+  :
+  ""
+
+  const reimbursedDate=
+  reimbursedIndex!==-1
+  ?
+  parseImportedDate(
+   row[reimbursedIndex]
+  )
+  :
+  ""
+
   expenses.push({
 
    id:
@@ -1675,6 +2301,12 @@ function importCSVText(text){
    merchant,
 
    amount,
+
+   status,
+
+   sentDate,
+
+   reimbursedDate,
 
    ocr:"",
 
@@ -1790,7 +2422,6 @@ function parseCSV(text){
    ){
 
     cell+='"'
-
     i++
 
    }
@@ -1812,7 +2443,6 @@ function parseCSV(text){
   ){
 
    row.push(cell)
-
    cell=""
 
    continue
@@ -1833,25 +2463,18 @@ function parseCSV(text){
     char==="\r"
     &&
     next==="\n"
-   ){
-
-    i++
-
-   }
+   )
+   i++
 
    row.push(cell)
 
    if(
     row.some(
      value=>
-     String(value)
-     .trim()!==""
+     String(value).trim()!==""
     )
-   ){
-
-    rows.push(row)
-
-   }
+   )
+   rows.push(row)
 
    row=[]
    cell=""
@@ -1875,14 +2498,10 @@ function parseCSV(text){
   if(
    row.some(
     value=>
-    String(value)
-    .trim()!==""
+    String(value).trim()!==""
    )
-  ){
-
-   rows.push(row)
-
-  }
+  )
+  rows.push(row)
 
  }
 
@@ -1894,11 +2513,12 @@ function parseImportedDate(value){
 
  const text=
  String(
-  value
-  ??
-  ""
+  value||""
  )
  .trim()
+
+ if(!text)
+ return ""
 
  let match=
  text.match(
@@ -1952,9 +2572,7 @@ function parseImportedAmount(value){
 
  const text=
  String(
-  value
-  ??
-  ""
+  value||""
  )
  .trim()
  .replace(/\s/g,"")
@@ -1968,11 +2586,8 @@ function parseImportedAmount(value){
   !Number.isFinite(amount)
   ||
   amount<=0
- ){
-
-  return null
-
- }
+ )
+ return null
 
  return amount
 
@@ -1998,8 +2613,7 @@ function normalizeMerchant(value){
 function sameExpense(a,b){
 
  return(
-  a.date===
-  b.date
+  a.date===b.date
   &&
   normalizeMerchant(
    a.merchant
