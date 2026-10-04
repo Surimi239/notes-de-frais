@@ -22,7 +22,9 @@
 
 <style>
 
-*{box-sizing:border-box}
+*{
+ box-sizing:border-box
+}
 
 body{
  margin:0;
@@ -281,8 +283,6 @@ h1{
  font-size:20px
 }
 
-/* BARRE DE SÉLECTION MULTIPLE */
-
 .batchBar{
  display:none;
  max-width:700px;
@@ -323,8 +323,6 @@ h1{
  background:#fdecec;
  color:#b42318
 }
-
-/* FICHE DÉPENSE */
 
 .sheet{
  display:none;
@@ -482,7 +480,6 @@ Sélectionner
 </div>
 </div>
 
-
 <div
  class="backupMenu"
  id="backupMenu"
@@ -498,7 +495,6 @@ Sélectionner
 
 </div>
 
-
 <div class="month">
 
 <button onclick="moveMonth(-1)">‹</button>
@@ -508,7 +504,6 @@ Sélectionner
 <button onclick="moveMonth(1)">›</button>
 
 </div>
-
 
 <div class="total">
 
@@ -525,7 +520,6 @@ Sélectionner
 
 </div>
 
-
 <input
  class="search"
  id="search"
@@ -537,7 +531,6 @@ Sélectionner
 
 </main>
 
-
 <div class="bottom">
 
 <button
@@ -547,7 +540,6 @@ Sélectionner
 >
 📷 Scanner un justificatif
 </button>
-
 
 <div
  class="batchBar"
@@ -586,7 +578,6 @@ Remboursées
 
 </div>
 
-
 <input
  hidden
  id="camera"
@@ -601,7 +592,6 @@ Remboursées
  type="file"
  accept=".csv,text/csv"
 >
-
 
 <div class="sheet" id="sheet">
 
@@ -671,7 +661,6 @@ Remboursée
  id="statusInfo"
 ></div>
 
-
 <div class="buttons">
 
 <button
@@ -690,7 +679,6 @@ Enregistrer
 
 </div>
 
-
 <button
  class="delete"
  id="deleteButton"
@@ -703,7 +691,6 @@ Supprimer cette dépense
 </div>
 </div>
 
-
 <div
  class="toast"
  id="toast"
@@ -711,12 +698,12 @@ Supprimer cette dépense
 Dépense enregistrée
 </div>
 
-
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 
 <script>
 
-let currentMonth=new Date()
+let currentMonth=
+new Date()
 
 let photo=""
 let ocr=""
@@ -738,6 +725,7 @@ expenses=
 expenses.map(
  x=>({
   ...x,
+  id:x.id || createFallbackId(),
   status:x.status||"to_send",
   sentDate:x.sentDate||"",
   reimbursedDate:x.reimbursedDate||""
@@ -749,6 +737,43 @@ saveLocal()
 const $=
 id=>document.getElementById(id)
 
+function createFallbackId(){
+
+ return(
+  Date.now()*1000
+  +
+  Math.floor(
+   Math.random()*1000
+  )
+ )
+
+}
+
+function createUniqueId(){
+
+ let id
+
+ do{
+
+  id=
+  Date.now()*1000
+  +
+  Math.floor(
+   Math.random()*1000
+  )
+
+ }
+ while(
+  expenses.some(
+   x=>
+   String(x.id)===
+   String(id)
+  )
+ )
+
+ return id
+
+}
 
 function today(){
 
@@ -757,7 +782,6 @@ function today(){
  .slice(0,10)
 
 }
-
 
 function showToast(message){
 
@@ -779,7 +803,6 @@ function showToast(message){
 
 }
 
-
 function euro(n){
 
  return new Intl.NumberFormat(
@@ -791,7 +814,6 @@ function euro(n){
  ).format(n||0)
 
 }
-
 
 function sameMonth(s,d){
 
@@ -808,7 +830,6 @@ function sameMonth(s,d){
 
 }
 
-
 function statusLabel(status){
 
  if(status==="sent")
@@ -821,7 +842,6 @@ function statusLabel(status){
 
 }
 
-
 function render(){
 
  const q=
@@ -831,7 +851,8 @@ function render(){
 
  const monthRows=
  expenses.filter(
-  x=>sameMonth(
+  x=>
+  sameMonth(
    x.date,
    currentMonth
   )
@@ -855,7 +876,6 @@ function render(){
   b.date.localeCompare(a.date)
  )
 
-
  $("month").textContent=
  new Intl.DateTimeFormat(
   "fr-FR",
@@ -864,7 +884,6 @@ function render(){
    year:"numeric"
   }
  ).format(currentMonth)
-
 
  const total=
  monthRows.reduce(
@@ -876,12 +895,16 @@ function render(){
  $("total").textContent=
  euro(total)
 
-
  $("count").textContent=
  monthRows.length+
  " dépense"+
- (monthRows.length>1?"s":"")
-
+ (
+  monthRows.length>1
+  ?
+  "s"
+  :
+  ""
+ )
 
  const toSend=
  monthRows.filter(
@@ -898,7 +921,6 @@ function render(){
   x=>x.status==="reimbursed"
  ).length
 
-
  $("summary").textContent=
  toSend+
  " à envoyer • "+
@@ -910,7 +932,6 @@ function render(){
  " remboursée"+
  (paid>1?"s":"")
 
-
  if(!rows.length){
 
   $("list").innerHTML=
@@ -921,15 +942,17 @@ function render(){
   '</div>'
 
   return
- }
 
+ }
 
  $("list").innerHTML=
  rows.map(
   x=>{
 
    const selected=
-   selectedIds.has(x.id)
+   selectedIds.has(
+    String(x.id)
+   )
 
    const check=
    selectionMode
@@ -946,7 +969,7 @@ function render(){
 
    <div
     class="item"
-    onclick="handleExpenseClick(${x.id})"
+    onclick="handleExpenseClick('${String(x.id)}')"
    >
 
     <div class="itemLeft">
@@ -984,7 +1007,6 @@ function render(){
 
 }
 
-
 function handleExpenseClick(id){
 
  if(selectionMode){
@@ -1002,7 +1024,6 @@ function handleExpenseClick(id){
  openExpense(id)
 
 }
-
 
 function toggleSelectionMode(){
 
@@ -1036,7 +1057,6 @@ function toggleSelectionMode(){
 
 }
 
-
 function batchStatus(newStatus){
 
  if(!selectedIds.size){
@@ -1048,13 +1068,18 @@ function batchStatus(newStatus){
   return
  }
 
- const date=today()
+ const date=
+ today()
 
  expenses=
  expenses.map(
   expense=>{
 
-   if(!selectedIds.has(expense.id))
+   if(
+    !selectedIds.has(
+     String(expense.id)
+    )
+   )
    return expense
 
    if(newStatus==="to_send"){
@@ -1082,7 +1107,8 @@ function batchStatus(newStatus){
    return{
     ...expense,
     status:"reimbursed",
-    sentDate:expense.sentDate||date,
+    sentDate:
+     expense.sentDate||date,
     reimbursedDate:date
    }
 
@@ -1107,9 +1133,6 @@ function batchStatus(newStatus){
 
 }
 
-
-/* SUPPRESSION MULTIPLE */
-
 function deleteSelectedExpenses(){
 
  if(!selectedIds.size){
@@ -1123,7 +1146,10 @@ function deleteSelectedExpenses(){
 
  const selectedExpenses=
  expenses.filter(
-  x=>selectedIds.has(x.id)
+  x=>
+  selectedIds.has(
+   String(x.id)
+  )
  )
 
  const count=
@@ -1153,7 +1179,10 @@ function deleteSelectedExpenses(){
 
  expenses=
  expenses.filter(
-  x=>!selectedIds.has(x.id)
+  x=>
+  !selectedIds.has(
+   String(x.id)
+  )
  )
 
  saveLocal()
@@ -1183,7 +1212,6 @@ function deleteSelectedExpenses(){
 
 }
 
-
 function escapeHTML(s){
 
  return String(s)
@@ -1199,7 +1227,6 @@ function escapeHTML(s){
  )
 
 }
-
 
 function formatDate(s){
 
@@ -1222,7 +1249,6 @@ function formatDate(s){
 
 }
 
-
 function moveMonth(n){
 
  currentMonth=
@@ -1238,7 +1264,6 @@ function moveMonth(n){
 
 }
 
-
 function toggleBackupMenu(){
 
  $("backupMenu")
@@ -1246,7 +1271,6 @@ function toggleBackupMenu(){
  .toggle("open")
 
 }
-
 
 document.addEventListener(
  "click",
@@ -1274,7 +1298,6 @@ document.addEventListener(
 
  }
 )
-
 
 function openManualExpense(){
 
@@ -1315,7 +1338,6 @@ function openManualExpense(){
 
 }
 
-
 function startScan(){
 
  editingId=null
@@ -1336,7 +1358,6 @@ function startScan(){
 
 }
 
-
 $("camera").onchange=
 async e=>{
 
@@ -1346,10 +1367,15 @@ async e=>{
  if(!file)
  return
 
- $("date").value=today()
+ $("date").value=
+ today()
+
  $("merchant").value=""
+
  $("amount").value=""
- $("expenseStatus").value="to_send"
+
+ $("expenseStatus").value=
+ "to_send"
 
  updateStatusInfo()
 
@@ -1362,11 +1388,11 @@ async e=>{
  const reader=
  new FileReader()
 
-
  reader.onload=
  async()=>{
 
-  photo=reader.result
+  photo=
+  reader.result
 
   $("preview").src=
   photo
@@ -1377,7 +1403,6 @@ async e=>{
   $("sheet")
   .classList
   .add("open")
-
 
   try{
 
@@ -1406,10 +1431,8 @@ async e=>{
     }
    )
 
-
    ocr=
    result.data.text||""
-
 
    const detectedDate=
    findDate(ocr)
@@ -1420,20 +1443,16 @@ async e=>{
    const detectedMerchant=
    findMerchant(ocr)
 
-
    if(detectedDate)
    $("date").value=
    detectedDate
-
 
    if(detectedAmount!==null)
    $("amount").value=
    detectedAmount.toFixed(2)
 
-
    $("merchant").value=
    detectedMerchant
-
 
    $("ocrStatus").textContent=
    "Ticket analysé — vérifie puis enregistre."
@@ -1455,16 +1474,16 @@ async e=>{
 
 }
 
-
 function lines(text){
 
  return text
  .split(/\r?\n/)
- .map(x=>x.trim())
+ .map(
+  x=>x.trim()
+ )
  .filter(Boolean)
 
 }
-
 
 function findDate(text){
 
@@ -1494,16 +1513,17 @@ function findDate(text){
  return(
   year+
   "-"+
-  String(Number(match[2]))
-   .padStart(2,"0")
+  String(
+   Number(match[2])
+  ).padStart(2,"0")
   +
   "-"+
-  String(Number(match[1]))
-   .padStart(2,"0")
+  String(
+   Number(match[1])
+  ).padStart(2,"0")
  )
 
 }
-
 
 function getAmount(line){
 
@@ -1523,7 +1543,6 @@ function getAmount(line){
  )
 
 }
-
 
 function findAmount(text){
 
@@ -1567,7 +1586,10 @@ function findAmount(text){
  textLines
  .map(getAmount)
  .filter(
-  x=>x!==null&&x>0
+  x=>
+  x!==null
+  &&
+  x>0
  )
 
  return(
@@ -1579,7 +1601,6 @@ function findAmount(text){
  )
 
 }
-
 
 function findMerchant(text){
 
@@ -1619,18 +1640,20 @@ function findMerchant(text){
 
 }
 
-
 function openExpense(id){
 
  const expense=
  expenses.find(
-  x=>x.id===id
+  x=>
+  String(x.id)===
+  String(id)
  )
 
  if(!expense)
  return
 
- editingId=id
+ editingId=
+ String(id)
 
  originalStatus=
  expense.status||"to_send"
@@ -1640,7 +1663,6 @@ function openExpense(id){
 
  ocr=
  expense.ocr||""
-
 
  $("sheetTitle").textContent=
  "Modifier la dépense"
@@ -1681,14 +1703,15 @@ function openExpense(id){
 
 }
 
-
 function updateStatusInfo(expense){
 
  if(!expense&&editingId){
 
   expense=
   expenses.find(
-   x=>x.id===editingId
+   x=>
+   String(x.id)===
+   String(editingId)
   )
 
  }
@@ -1723,7 +1746,6 @@ function updateStatusInfo(expense){
 
 }
 
-
 function closeSheet(){
 
  $("sheet")
@@ -1734,7 +1756,6 @@ function closeSheet(){
  originalStatus=null
 
 }
-
 
 function saveExpense(){
 
@@ -1754,7 +1775,6 @@ function saveExpense(){
  const newStatus=
  $("expenseStatus").value
 
-
  if(
   !date
   ||
@@ -1773,12 +1793,13 @@ function saveExpense(){
 
  }
 
-
  if(editingId){
 
   const index=
   expenses.findIndex(
-   x=>x.id===editingId
+   x=>
+   String(x.id)===
+   String(editingId)
   )
 
   if(index!==-1){
@@ -1789,14 +1810,12 @@ function saveExpense(){
    let reimbursedDate=
    expenses[index].reimbursedDate||""
 
-
    if(newStatus==="to_send"){
 
     sentDate=""
     reimbursedDate=""
 
    }
-
 
    if(newStatus==="sent"){
 
@@ -1811,7 +1830,6 @@ function saveExpense(){
 
    }
 
-
    if(newStatus==="reimbursed"){
 
     if(!sentDate)
@@ -1825,7 +1843,6 @@ function saveExpense(){
     reimbursedDate=today()
 
    }
-
 
    expenses[index]={
     ...expenses[index],
@@ -1858,7 +1875,7 @@ function saveExpense(){
 
   expenses.push({
 
-   id:Date.now(),
+   id:createUniqueId(),
 
    date,
 
@@ -1880,7 +1897,6 @@ function saveExpense(){
 
  }
 
-
  saveLocal()
 
  closeSheet()
@@ -1893,7 +1909,6 @@ function saveExpense(){
 
 }
 
-
 function deleteExpense(){
 
  if(!editingId)
@@ -1901,7 +1916,9 @@ function deleteExpense(){
 
  const expense=
  expenses.find(
-  x=>x.id===editingId
+  x=>
+  String(x.id)===
+  String(editingId)
  )
 
  if(!expense)
@@ -1920,7 +1937,9 @@ function deleteExpense(){
 
  expenses=
  expenses.filter(
-  x=>x.id!==editingId
+  x=>
+  String(x.id)!==
+  String(editingId)
  )
 
  saveLocal()
@@ -1935,7 +1954,6 @@ function deleteExpense(){
 
 }
 
-
 function saveLocal(){
 
  localStorage.setItem(
@@ -1944,9 +1962,6 @@ function saveLocal(){
  )
 
 }
-
-
-/* EXPORT CSV */
 
 function exportCSV(){
 
@@ -1971,25 +1986,34 @@ function exportCSV(){
  )
 
  let csv=
- "\uFEFFDate;Description;Montant;Statut;Date envoi;Date remboursement\n"
-
+ "\uFEFFID;Date;Description;Montant;Statut;Date envoi;Date remboursement\n"
 
  for(const expense of sorted){
 
   csv+=
+  csvEscape(
+   expense.id
+  )
+  +
+  ";"
+  +
   csvEscape(
    formatDate(expense.date)
   )
   +
   ";"
   +
-  csvEscape(expense.merchant)
+  csvEscape(
+   expense.merchant
+  )
   +
   ";"
   +
-  Number(expense.amount)
-   .toFixed(2)
-   .replace(".",",")
+  Number(
+   expense.amount
+  )
+  .toFixed(2)
+  .replace(".",",")
   +
   ";"
   +
@@ -2019,7 +2043,6 @@ function exportCSV(){
 
  }
 
-
  const blob=
  new Blob(
   [csv],
@@ -2035,22 +2058,27 @@ function exportCSV(){
  document.createElement("a")
 
  link.href=url
- link.download="notes-de-frais.csv"
+
+ link.download=
+ "notes-de-frais.csv"
 
  link.click()
 
  setTimeout(
-  ()=>URL.revokeObjectURL(url),
+  ()=>{
+   URL.revokeObjectURL(url)
+  },
   1000
  )
 
 }
 
-
 function csvEscape(value){
 
  value=
- String(value??"")
+ String(
+  value??""
+ )
 
  if(
   value.includes(";")
@@ -2075,9 +2103,6 @@ function csvEscape(value){
 
 }
 
-
-/* IMPORT CSV */
-
 function startCSVImport(){
 
  $("backupMenu")
@@ -2087,7 +2112,6 @@ function startCSVImport(){
  $("csvInput").click()
 
 }
-
 
 $("csvInput").onchange=
 e=>{
@@ -2111,7 +2135,6 @@ e=>{
    )
 
   }
-
   catch(error){
 
    alert(
@@ -2130,7 +2153,6 @@ e=>{
  e.target.value=""
 
 }
-
 
 function importCSVText(text){
 
@@ -2154,7 +2176,6 @@ function importCSVText(text){
 
  }
 
-
  const headers=
  rows[0]
  .map(
@@ -2163,6 +2184,15 @@ function importCSVText(text){
   .toLowerCase()
  )
 
+ const idIndex=
+ headers.findIndex(
+  x=>
+  x==="id"
+  ||
+  x==="id dépense"
+  ||
+  x==="id depense"
+ )
 
  const dateIndex=
  headers.findIndex(
@@ -2211,7 +2241,6 @@ function importCSVText(text){
   x==="date de remboursement"
  )
 
-
  if(
   dateIndex===-1
   ||
@@ -2225,13 +2254,13 @@ function importCSVText(text){
   )
 
   return
- }
 
+ }
 
  let imported=0
  let duplicates=0
  let invalid=0
-
+ let generatedIds=0
 
  for(
   let i=1;
@@ -2250,13 +2279,13 @@ function importCSVText(text){
   const merchant=
   String(
    row[descriptionIndex]??""
-  ).trim()
+  )
+  .trim()
 
   const amount=
   parseImportedAmount(
    row[amountIndex]
   )
-
 
   if(
    !date
@@ -2267,35 +2296,51 @@ function importCSVText(text){
   ){
 
    invalid++
+
    continue
 
   }
 
+  let importedId=""
 
-  const duplicate=
-  expenses.some(
-   x=>
-   sameExpense(
-    x,
-    {
-     date,
-     merchant,
-     amount
-    }
+  if(idIndex!==-1){
+
+   importedId=
+   String(
+    row[idIndex]??""
    )
-  )
-
-
-  if(duplicate){
-
-   duplicates++
-   continue
+   .trim()
 
   }
 
+  if(importedId){
+
+   const alreadyExists=
+   expenses.some(
+    expense=>
+    String(expense.id)===
+    importedId
+   )
+
+   if(alreadyExists){
+
+    duplicates++
+
+    continue
+
+   }
+
+  }
+  else{
+
+   importedId=
+   createUniqueId()
+
+   generatedIds++
+
+  }
 
   let status="to_send"
-
 
   if(statusIndex!==-1){
 
@@ -2305,7 +2350,6 @@ function importCSVText(text){
    )
    .trim()
    .toLowerCase()
-
 
    if(
     value.includes("rembours")
@@ -2327,7 +2371,6 @@ function importCSVText(text){
 
   }
 
-
   const sentDate=
   sentIndex!==-1
   ?
@@ -2336,7 +2379,6 @@ function importCSVText(text){
   )
   :
   ""
-
 
   const reimbursedDate=
   reimbursedIndex!==-1
@@ -2347,17 +2389,9 @@ function importCSVText(text){
   :
   ""
 
-
   expenses.push({
 
-   id:
-   Date.now()
-   +
-   i
-   +
-   Math.floor(
-    Math.random()*1000
-   ),
+   id:importedId,
 
    date,
 
@@ -2377,36 +2411,80 @@ function importCSVText(text){
 
   })
 
-
   imported++
 
  }
 
-
  saveLocal()
- render()
 
+ render()
 
  let message=
  imported+
  " dépense"+
- (imported>1?"s":"")+
+ (
+  imported>1
+  ?
+  "s"
+  :
+  ""
+ )+
  " importée"+
- (imported>1?"s":"")
-
+ (
+  imported>1
+  ?
+  "s"
+  :
+  ""
+ )
 
  if(duplicates){
 
   message+=
   "\n"+
   duplicates+
-  " doublon"+
-  (duplicates>1?"s":"")+
+  " ID déjà présent"+
+  (
+   duplicates>1
+   ?
+   "s"
+   :
+   ""
+  )+
   " ignoré"+
-  (duplicates>1?"s":"")
+  (
+   duplicates>1
+   ?
+   "s"
+   :
+   ""
+  )
 
  }
 
+ if(generatedIds){
+
+  message+=
+  "\n"+
+  generatedIds+
+  " nouvel"+
+  (
+   generatedIds>1
+   ?
+   "s"
+   :
+   ""
+  )+
+  " ID créé"+
+  (
+   generatedIds>1
+   ?
+   "s"
+   :
+   ""
+  )
+
+ }
 
  if(invalid){
 
@@ -2414,17 +2492,27 @@ function importCSVText(text){
   "\n"+
   invalid+
   " ligne"+
-  (invalid>1?"s":"")+
+  (
+   invalid>1
+   ?
+   "s"
+   :
+   ""
+  )+
   " non reconnue"+
-  (invalid>1?"s":"")
+  (
+   invalid>1
+   ?
+   "s"
+   :
+   ""
+  )
 
  }
-
 
  alert(message)
 
 }
-
 
 function parseCSV(text){
 
@@ -2434,16 +2522,17 @@ function parseCSV(text){
  let cell=""
  let quoted=false
 
-
  for(
   let i=0;
   i<text.length;
   i++
  ){
 
-  const char=text[i]
-  const next=text[i+1]
+  const char=
+  text[i]
 
+  const next=
+  text[i+1]
 
   if(char==='"'){
 
@@ -2457,17 +2546,16 @@ function parseCSV(text){
     i++
 
    }
-
    else{
 
-    quoted=!quoted
+    quoted=
+    !quoted
 
    }
 
    continue
 
   }
-
 
   if(
    char===';'
@@ -2481,7 +2569,6 @@ function parseCSV(text){
    continue
 
   }
-
 
   if(
    (
@@ -2506,7 +2593,7 @@ function parseCSV(text){
     row.some(
      value=>
      String(value)
-      .trim()!==""
+     .trim()!==""
     )
    )
    rows.push(row)
@@ -2518,11 +2605,9 @@ function parseCSV(text){
 
   }
 
-
   cell+=char
 
  }
-
 
  if(
   cell!==""
@@ -2536,23 +2621,23 @@ function parseCSV(text){
    row.some(
     value=>
     String(value)
-     .trim()!==""
+    .trim()!==""
    )
   )
   rows.push(row)
 
  }
 
-
  return rows
 
 }
 
-
 function parseImportedDate(value){
 
  const text=
- String(value||"")
+ String(
+  value||""
+ )
  .trim()
 
  if(!text)
@@ -2563,40 +2648,41 @@ function parseImportedDate(value){
   /^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{4})$/
  )
 
-
  if(match){
 
   return(
    match[3]+
    "-"+
-   String(Number(match[2]))
-    .padStart(2,"0")
+   String(
+    Number(match[2])
+   ).padStart(2,"0")
    +
    "-"+
-   String(Number(match[1]))
-    .padStart(2,"0")
+   String(
+    Number(match[1])
+   ).padStart(2,"0")
   )
 
  }
-
 
  match=
  text.match(
   /^(\d{4})-(\d{1,2})-(\d{1,2})$/
  )
 
-
  if(match){
 
   return(
    match[1]+
    "-"+
-   String(Number(match[2]))
-    .padStart(2,"0")
+   String(
+    Number(match[2])
+   ).padStart(2,"0")
    +
    "-"+
-   String(Number(match[3]))
-    .padStart(2,"0")
+   String(
+    Number(match[3])
+   ).padStart(2,"0")
   )
 
  }
@@ -2605,11 +2691,12 @@ function parseImportedDate(value){
 
 }
 
-
 function parseImportedAmount(value){
 
  const text=
- String(value||"")
+ String(
+  value||""
+ )
  .trim()
  .replace(/\s/g,"")
  .replace("€","")
@@ -2628,46 +2715,6 @@ function parseImportedAmount(value){
  return amount
 
 }
-
-
-function normalizeMerchant(value){
-
- return String(value)
- .trim()
- .toLowerCase()
- .normalize("NFD")
- .replace(
-  /[\u0300-\u036f]/g,
-  ""
- )
- .replace(
-  /\s+/g,
-  " "
- )
-
-}
-
-
-function sameExpense(a,b){
-
- return(
-  a.date===b.date
-  &&
-  normalizeMerchant(a.merchant)
-  ===
-  normalizeMerchant(b.merchant)
-  &&
-  Math.round(
-   Number(a.amount)*100
-  )
-  ===
-  Math.round(
-   Number(b.amount)*100
-  )
- )
-
-}
-
 
 render()
 
